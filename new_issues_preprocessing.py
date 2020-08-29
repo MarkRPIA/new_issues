@@ -8,6 +8,118 @@ import numpy as np
 
 
 ########################################################################################################################
+# GLOBALS ##############################################################################################################
+########################################################################################################################
+
+# Note that some dealers are listed multiple times under slightly different names
+
+dealer_to_aliases = {'ABN': ['ABN', 'ABN AMRO Bank N.V.'],
+                     'Academy': ['Academy'], 'ANZ': ['ANZ'],
+                     'Axis': ['Axis Bank'],
+                     'BARC': ['Barc'],
+                     'BBT': ['BB&T'],
+                     'BBVA': ['BBVA'],
+                     'BMO': ['BMO'],
+                     'BNP': ['BNP'],
+                     'BNS': ['Scotia', 'The Bank Of Nova Scotia GB', 'Scotiabank Europe Plc.'],
+                     'BNY': ['BNY', 'BNY Mellon Capital Markets, LLC'],
+                     'BOA': ['BofA'],
+                     'BOC': ['BOC International Holdings Limited.', 'Bank of China (Hong Kong) Limited'],
+                     'BoCom': ['Bank of Communications Co., Ltd. Hong Kong Branch'],
+                     'Bradesco': ['Banco Bradesco BBI S.A.'],
+                     'BTG': ['BTG Pactual US'],
+                     'C': ['Citi'],
+                     'CA': ['CA'],
+                     'CCB': ['CCB International Capital Limited'],
+                     'CG': ['Credit Agricole Corporate and Investment Bank (New York)'],
+                     'CIBC': ['CIBC'],
+                     'CIC': ['CIC'],
+                     'Citizens': ['Citizens'],
+                     'CJSC': ['CJSC Sberbank CIB'],
+                     'CMB': ['CMB International Capital Limited'],
+                     'CoBank': ['CoBank'],
+                     'Commerzbank': ['Commerz'],
+                     'COSC': ['COSC'],
+                     'CS': ['CS'],
+                     'Daiwa': ['Daiwa'],
+                     'DB': ['DB'],
+                     'DBS': ['DBS Bank Ltd'],
+                     'DNB': ['DnB', 'DNB Bank ASA'],
+                     'Emirates': ['Emirates NBD PJSC'],
+                     'Fifth Third': ['Fifth Third Securiti'],
+                     'Gazprombank': ['Gazprombank'],
+                     'GS': ['GS', 'Goldman Sachs UK'],
+                     'HSBC': ['HSBC'],
+                     'Huntington': ['Huntington'],
+                     'ICBC': ['ICBC'],
+                     'IMI': ['Banca IMI'],
+                     'ING': ['ING'],
+                     'Itau': ['Itau BBA'],
+                     'Jefferies': ['Jeff'],
+                     'JPM': ['JPM'],
+                     'KBC': ['KBC'],
+                     'Keefe': ['Keefe, Bruyette & Woods, Inc', 'Keefe'],
+                     'KeyBank': ['Key'],
+                     'Lloyds': ['Lloyds'],
+                     'Loop': ['Loop'],
+                     'Macquarie': ['Macquarie Bank Limited'],
+                     'Mandiri': ['Mandiri Securities Pte. Ltd.'],
+                     'Mitsubishi': ['MUFJ', 'MUFG'],
+                     'Mizuho': ['Mizuho', 'Mizuho Securities USA Inc'],
+                     'MS': ['MS'],
+                     'NAB': ['NAB'],
+                     'Natixis': ['Natixis'],
+                     'NatWest': ['NATWEST'],
+                     'NBAD': ['National Bank of Abu Dhabi'],
+                     'NBC': ['NBC'],
+                     'Nomura': ['Nomura'],
+                     'NW': ['NW Farm'],
+                     'Oversea Chinese': ['Oversea-Chinese Bank'],
+                     'Piper': ['Piper'],
+                     'PNC': ['PNC'],
+                     'Rabo': ['Rabo'],
+                     'Raiffeisen': ['Raiffeisen'],
+                     'RBC': ['RBC'],
+                     'RBS': ['RBS'],
+                     'Regions': ['Regions'],
+                     'RJ': ['RJ'],
+                     'Santander': ['Santander', 'Banco Santander SA'],
+                     'SEB': ['SEB'],
+                     'Seelaus': ['R. Seelaus'],
+                     'SG': ['SG'],
+                     'SMBC': ['SMBC', 'SMBC Nikko Securities', 'SMBC Nikko Capital Markets Limited'],
+                     'Standard': ['Standard Bank'],
+                     'Standard Chartered': ['Std Chrtrd'],
+                     'Stephens': ['Stephens'],
+                     'STRH': ['STRH'],
+                     'Sumitomo': ['SumiMit'],
+                     'SunTrust': ['SunTrust Robinson', 'SunTrust Robinson Humphrey, Inc.',
+                                  'SunTrust Robinson Humphrey'],
+                     'TD': ['TD', 'TD Securities', 'TD Securities (USA), LLC'],
+                     'UBS': ['UBS'],
+                     'UMB': ['UMB'],
+                     'Unicredit': ['Unicredit'],
+                     'US Bancorp': ['US Bancorp', 'U.S. Bancorp Investments, Inc'],
+                     'US Bank': ['US Bank N.A', 'US Bk'],
+                     'VTB': ['VTB Capital'],
+                     'Westpac': ['Westpac Banking Corporation'],
+                     'Wells': ['WFS', 'Wells Fargo Securities International Limited',
+                               'Wells Fargo Brokerage Services, LLC']}
+
+major_dealers = ['BARC', 'BNP', 'BOA', 'C', 'CS', 'DB', 'GS', 'HSBC', 'JPM', 'Mitsubishi', 'Mizuho', 'MS', 'RBC', 'Wells']
+major_dealer_aliases = []
+for dealer in major_dealers:
+    major_dealer_aliases = major_dealer_aliases + dealer_to_aliases[dealer]
+
+mid_tier_dealers = ['BBVA', 'BMO', 'BNS', 'BNY', 'CG', 'CIBC', 'PNC', 'Santander', 'SG', 'SMBC', 'STRH', 'SunTrust', 'TD', 'UBS', 'US Bancorp']
+mid_tier_dealer_aliases = []
+for dealer in mid_tier_dealers:
+    mid_tier_dealer_aliases = mid_tier_dealer_aliases + dealer_to_aliases[dealer]
+
+# All other dealers are considered low tier
+
+
+########################################################################################################################
 # FUNCTIONS ############################################################################################################
 ########################################################################################################################
 
@@ -351,6 +463,10 @@ def get_distribution_type_col(row, field, check_equality):
 
 
 # Add the distribution columns to X
+# Note that 144A offerings can only be held by Qualified Institutional Buyers. RegS offerings can be held by any non-US
+# holder. An unregistered security is one that has not been registered with the SEC and therefore cannot be sold
+# publicly. Reg Rights means the issuer can register it, which improves liquidity. 3(a)(2) securities are bank notes
+# that are issued on a regular or continuous basis. Money market funds can buy them.
 def add_distribution_cols(X, df, verbose):
     X['Is144a'] = df.apply(get_distribution_type_col, field="144a", check_equality=False, axis=1)
     X['IsRegS'] = df.apply(get_distribution_type_col, field="reg s", check_equality=False, axis=1)
@@ -370,6 +486,177 @@ def add_distribution_cols(X, df, verbose):
         print()
 
     return X, df
+
+
+# Helper function for determining the role of a given dealer in the new issue
+# Note that I decided to combine the B&D Agent, the Bookrunners, and the Joint Leads columns since they all have very
+# similar meaning and including them all separately would have added far too many variables.
+def get_dealer_role(row, dealer):
+    dealer_aliases = dealer_to_aliases[dealer]
+
+    if row['B&D Agent'] in dealer_aliases: # most important dealer
+        return 2
+
+    # Bookrunners have same impact as joint leads
+
+    elif row['Bk1'] in dealer_aliases:
+        return 1
+    elif row['Bk2'] in dealer_aliases:
+        return 1
+    elif row['Bk3'] in dealer_aliases:
+        return 1
+    elif row['Bk4'] in dealer_aliases:
+        return 1
+    elif row['Bk5'] in dealer_aliases:
+        return 1
+    elif row['Bk6'] in dealer_aliases:
+        return 1
+    elif row['Bk7'] in dealer_aliases:
+        return 1
+    elif row['Bk8'] in dealer_aliases:
+        return 1
+    elif row['Bk9'] in dealer_aliases:
+        return 1
+    elif row['Bk10'] in dealer_aliases:
+        return 1
+
+    # Joint leads have same impact as bookrunners
+
+    elif row['Jt Ld 1'] in dealer_aliases:
+        return 1
+    elif row['Jt Ld 2'] in dealer_aliases:
+        return 1
+    elif row['Jt Ld 3'] in dealer_aliases:
+        return 1
+    elif row['Jt Ld 4'] in dealer_aliases:
+        return 1
+    elif row['Jt Ld 5'] in dealer_aliases:
+        return 1
+    else:
+        return 0
+
+
+# Helper function to get the B&D Agent tier for the given dealer tier
+def get_bd_agent_tier_col(row, dealer_tier):
+    if dealer_tier == 'mid':
+        if row['B&D Agent'] in mid_tier_dealer_aliases:
+            return 1
+        else:
+            return 0
+    elif dealer_tier == 'low':
+        if (row['B&D Agent'] not in major_dealer_aliases) and (row['B&D Agent'] not in mid_tier_dealer_aliases):
+            return 1
+        else:
+            return 0
+
+
+# Helper function used in get_count_dealer_tier_col
+def increment_counts(row, field, count_major, count_mid, count_low):
+    if row[field] in major_dealer_aliases:
+        count_major += 1
+    elif row[field] in mid_tier_dealer_aliases:
+        count_mid += 1
+    elif row[field] != '-':
+        count_low += 1
+
+    return count_major, count_mid, count_low
+
+
+# Helper function used to get the count of each dealer tier
+def get_count_dealer_tier_col(row, dealer_tier):
+    count_major = 0
+    count_mid = 0
+    count_low = 0
+
+    count_major, count_mid, count_low = increment_counts(row, 'B&D Agent', count_major, count_mid, count_low)
+
+    count_major, count_mid, count_low = increment_counts(row, 'Bk1', count_major, count_mid, count_low)
+    count_major, count_mid, count_low = increment_counts(row, 'Bk2', count_major, count_mid, count_low)
+    count_major, count_mid, count_low = increment_counts(row, 'Bk3', count_major, count_mid, count_low)
+    count_major, count_mid, count_low = increment_counts(row, 'Bk4', count_major, count_mid, count_low)
+    count_major, count_mid, count_low = increment_counts(row, 'Bk5', count_major, count_mid, count_low)
+    count_major, count_mid, count_low = increment_counts(row, 'Bk6', count_major, count_mid, count_low)
+    count_major, count_mid, count_low = increment_counts(row, 'Bk7', count_major, count_mid, count_low)
+    count_major, count_mid, count_low = increment_counts(row, 'Bk8', count_major, count_mid, count_low)
+    count_major, count_mid, count_low = increment_counts(row, 'Bk9', count_major, count_mid, count_low)
+    count_major, count_mid, count_low = increment_counts(row, 'Bk10', count_major, count_mid, count_low)
+
+    count_major, count_mid, count_low = increment_counts(row, 'Jt Ld 1', count_major, count_mid, count_low)
+    count_major, count_mid, count_low = increment_counts(row, 'Jt Ld 2', count_major, count_mid, count_low)
+    count_major, count_mid, count_low = increment_counts(row, 'Jt Ld 3', count_major, count_mid, count_low)
+    count_major, count_mid, count_low = increment_counts(row, 'Jt Ld 4', count_major, count_mid, count_low)
+    count_major, count_mid, count_low = increment_counts(row, 'Jt Ld 5', count_major, count_mid, count_low)
+
+    if dealer_tier == 'major':
+        return count_major
+    elif dealer_tier == 'mid':
+        return count_mid
+    elif dealer_tier == 'low':
+        return count_low
+
+
+# Add the dealers' roles to X
+# Note that the final vector includes a separate column for each of the major dealers as well as booleans to represent
+# whether or not the B&D Agent was mid or low tier. It also includes a count of the number of major, mid tier, and low
+# tier dealers. Dealers were tiered according to business knowledge.
+def add_dealer_role_cols(X, df, verbose):
+    # Major dealers
+
+    X['BARC'] = df.apply(get_dealer_role, dealer='BARC', axis=1)
+    X['BNP'] = df.apply(get_dealer_role, dealer='BNP', axis=1)
+    X['BOA'] = df.apply(get_dealer_role, dealer='BOA', axis=1)
+    X['C'] = df.apply(get_dealer_role, dealer='C', axis=1)
+    X['CS'] = df.apply(get_dealer_role, dealer='CS', axis=1)
+    X['DB'] = df.apply(get_dealer_role, dealer='DB', axis=1)
+    X['GS'] = df.apply(get_dealer_role, dealer='GS', axis=1)
+    X['HSBC'] = df.apply(get_dealer_role, dealer='HSBC', axis=1)
+    X['JPM'] = df.apply(get_dealer_role, dealer='JPM', axis=1)
+    X['Mitsubishi'] = df.apply(get_dealer_role, dealer='Mitsubishi', axis=1)
+    X['Mizuho'] = df.apply(get_dealer_role, dealer='Mizuho', axis=1)
+    X['MS'] = df.apply(get_dealer_role, dealer='MS', axis=1)
+    X['RBC'] = df.apply(get_dealer_role, dealer='RBC', axis=1)
+    X['Wells'] = df.apply(get_dealer_role, dealer='Wells', axis=1)
+
+    # B&D for mid tier and low tier dealers
+    X['IsMidTierB&D'] = df.apply(get_bd_agent_tier_col, dealer_tier='mid', axis=1)
+    X['IsLowTierB&D'] = df.apply(get_bd_agent_tier_col, dealer_tier='low', axis=1)
+
+    # Count of each dealer tier
+
+    X['CountMajor'] = df.apply(get_count_dealer_tier_col, dealer_tier='major', axis=1)
+    X['CountMidTier'] = df.apply(get_count_dealer_tier_col, dealer_tier='mid', axis=1)
+    X['CountLowTier'] = df.apply(get_count_dealer_tier_col, dealer_tier='low', axis=1)
+
+    # Drop the columns from df
+
+    df = df.drop(['B&D Agent',
+                  'Bk1',
+                  'Bk2',
+                  'Bk3',
+                  'Bk4',
+                  'Bk5',
+                  'Bk6',
+                  'Bk7',
+                  'Bk8',
+                  'Bk9',
+                  'Bk10',
+                  'Jt Ld 1',
+                  'Jt Ld 2',
+                  'Jt Ld 3',
+                  'Jt Ld 4',
+                  'Jt Ld 5',
+                  ], axis=1)
+
+    if verbose:
+        print('Shape after adding the dealer role columns:')
+        print('X: {}'.format(X.shape))
+        print('df: {}'.format(df.shape))
+        print()
+
+    return X, df
+
+
+
 
 
 

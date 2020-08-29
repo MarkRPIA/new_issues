@@ -46,4 +46,6 @@ if __name__ == '__main__':
     # Create new columns
     X, df = new_issues_preprocessing.add_use_of_proceeds_cols(X, df, verbose)
     X, df = new_issues_preprocessing.add_distribution_cols(X, df, verbose)
+    X, df = new_issues_preprocessing.add_dealer_role_cols(X, df, verbose)
 
+    

@@ -43,9 +43,14 @@ if __name__ == '__main__':
     # One-hot encode the categorical columns
     X, df = new_issues_preprocessing.one_hot_encode(X, df, verbose)
 
-    # Create new columns
+    # Create the additional columns
     X, df = new_issues_preprocessing.add_use_of_proceeds_cols(X, df, verbose)
     X, df = new_issues_preprocessing.add_distribution_cols(X, df, verbose)
     X, df = new_issues_preprocessing.add_dealer_role_cols(X, df, verbose)
+    X, df = new_issues_preprocessing.add_years(X, df, verbose)
 
-    
+
+
+
+
+

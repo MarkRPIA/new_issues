@@ -656,6 +656,57 @@ def add_dealer_role_cols(X, df, verbose):
     return X, df
 
 
+# Helper function to get years to call
+def get_years_to_call(row):
+    pricing_date = row['Pricing Date']
+    call_date = row['Call Date']
+
+    return (call_date - pricing_date).days / 365.25
+
+
+# Helper function to get years to maturity
+def get_years_to_maturity(row):
+    pricing_date = row['Pricing Date']
+    maturity_date = row['Maturity']
+
+    return (maturity_date - pricing_date).days / 365.25
+
+
+# Add years to call/maturity to X
+# Note that "YearsToCall" serves as "IsCallable" as well.
+def add_years(X, df, verbose):
+    # Set 'Call Date' to 'Pricing Date' so that 'YearsToCall' will be 0 for non-callable securities
+    df['Call Date'] = df['Call Date'].mask(df['Call Date'] == '-', df['Pricing Date'])
+
+    # Set 'Maturity' to 'Pricing Date' so that 'YearsToMaturity' will be 0 for securities without a maturity date
+    # (ex: perps)
+    df['Maturity'] = df['Maturity'].mask(df['Maturity'] == '-', df['Pricing Date'])
+
+    # Convert 'Pricing Date', 'Call Date', and 'Maturity' to date times
+    # Note that 'Pricing Date' is the true issue date (when it starts trading)
+    df['Pricing Date'] = pd.to_datetime(df['Pricing Date'])
+    X['PricingDate'] = df['Pricing Date']  # save PricingDate for later use
+    df['Call Date'] = pd.to_datetime(df['Call Date'])
+    df['Maturity'] = pd.to_datetime(df['Maturity'])
+
+    # Add the columns to X
+
+    X['YearsToCall'] = df.apply(get_years_to_call, axis=1)
+    X['YearsToMaturity'] = df.apply(get_years_to_maturity, axis=1)
+
+    # Drop the columns from df
+
+    df = df.drop(['Pricing Date', 'Call Date', 'Maturity'], axis=1)
+
+    if verbose:
+        print('Shape after adding the years to call/maturity columns:')
+        print('X: {}'.format(X.shape))
+        print('df: {}'.format(df.shape))
+        print()
+
+    return X, df
+
+
 
 
 

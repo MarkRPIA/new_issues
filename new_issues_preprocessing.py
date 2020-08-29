@@ -3,8 +3,9 @@
 ########################################################################################################################
 
 import pandas as pd
-#import pandas_profiling
+# import pandas_profiling
 import numpy as np
+
 
 ########################################################################################################################
 # FUNCTIONS ############################################################################################################
@@ -28,7 +29,7 @@ def load_data(verbose):
 
 
 # Uses pandas_profiling to perform EDA.
-#def profile_data(df, filename):
+# def profile_data(df, filename):
 #    profile_report = pandas_profiling.ProfileReport(df)
 #    profile_report.to_file(output_file=filename)
 
@@ -61,7 +62,7 @@ def drop_cols(df, verbose):
 
     df = df.drop(['Settlement Date'], axis=1)  # not useful
     df = df.drop(['Bond Ticker', 'Issuer'], axis=1)  # could in theory one-hot encode, but then the input vectors would
-                                                     # be way too big
+    # be way too big
     df = df.drop(['Moody\'s/S&P/Fitch Rating'], axis=1)  # we have each of these individually
     df = df.drop(['Asset Class'], axis=1)  # this is almost all empty, plus 'Rank' is very similar
     df = df.drop(['Deal Size (Lcl Ccy)'], axis=1)  # it's all in USD, so 'Total Deal Size (USD)' is the same
@@ -71,10 +72,10 @@ def drop_cols(df, verbose):
     df = df.drop(['Benchmark'], axis=1)  # not useful
     df = df.drop(['Spread to Gov Benchmark'], axis=1)  # all zeroes
     df = df.drop(['Free r'], axis=1)  # this is the performance after it freed (i.e., after the greys) --> this is
-                                      # basically the target, but I will pull from Bloomberg to make sure the data is
-                                      # good
+    # basically the target, but I will pull from Bloomberg to make sure the data is
+    # good
     df = df.drop(['3mL Equivalent (bps)', 'M/S Equivalent', 'Spread vs. Midswaps', 'MS'], axis=1)  # basically all
-                                                                                                   # zeroes
+    # zeroes
     df = df.drop(['Movement from IPTS'], axis=1)  # will derive this to make sure it is accurate
     df = df.drop(['Orderbook Size (mm)'], axis=1)  # will derive this to make sure it is accurate
     df = df.drop(['Yield', 'Price'], axis=1)  # spread captures this information
@@ -94,20 +95,20 @@ def drop_cols(df, verbose):
     df = df.drop(['Call Structure'], axis=1)  # same as 'Structure' and we get this information from 'Call Date' already
     df = df.drop(['Special Call Features'], axis=1)  # text and almost all empty
     df = df.drop(['Par Call Period'], axis=1)  # the issuer can redeem at par within this many months of maturity,
-                                               # not useful
+    # not useful
     df = df.drop(['Up/Downsized'], axis=1)  # do not know this beforehand
     df = df.drop(['Price Execution'], axis=1)  # all empty
     df = df.drop(['Tranche Comments', 'Coupon Rate Comments', 'General Comments (deal level)'], axis=1)  # text and
-                                                                                                         # almost all
-                                                                                                         # empty
+    # almost all
+    # empty
     df = df.drop(['Bond Ticker.1'], axis=1)  # could in theory one-hot encode, but then the input vectors would be
-                                             # way too big
+    # way too big
     df = df.drop(['Desk'], axis=1)  # not useful
     df = df.drop(['Gross Spread '], axis=1)  # how much the syndicate is taking, not useful
     df = df.drop(['Total Fees'], axis=1)  # total fees including gross spread, lawyer fees, etc., not useful
     df = df.drop(['Co1', 'Co 2', 'Co 3', 'Co 4', 'Co 5'], axis=1)  # Cos don't even get books, they have nothing to do
-                                                                   # with the actual deal (they only get involved for
-                                                                   # relationship reasons amongst the dealers)
+    # with the actual deal (they only get involved for
+    # relationship reasons amongst the dealers)
     df = df.drop(['IsDM'], axis=1)  # same as floating coupon type
     df = df.drop(['IsSpread'], axis=1)  # get this from coupon type and IsYield
     df = df.drop(['IssueBenchmark'], axis=1)  # not useful
@@ -261,3 +262,30 @@ def add_non_feat_engineered_cols(X, df, verbose):
 
     return X, df
 
+
+def one_hot_encode(X, df, verbose):
+    df['Rate Type Selection'] = df['Rate Type Selection'].replace('3 month LIBOR', 'LIBOR')  # these are the same
+    df = df.rename(columns={
+                            'Coupon Type': 'CouponType',
+                            'Rate Type Selection': 'RateTypeSelection',
+                            'Issuer Type': 'IssuerType',
+                            'Industry ': 'Industry'})  # rename some columns
+
+    categorical_cols = ['CouponType', 'RateTypeSelection', 'IssuerType', 'Industry', 'Region']
+    X_ohe = pd.get_dummies(df[categorical_cols], drop_first=True)
+
+    # Add to the DataFrame
+
+    X = pd.concat([X, X_ohe], axis=1)
+
+    # Drop the columns from df
+
+    df = df.drop(categorical_cols, axis=1)
+
+    if verbose:
+        print('Shape after one-hot encoding:')
+        print('X: {}'.format(X.shape))
+        print('df: {}'.format(df.shape))
+        print()
+
+    return X, df

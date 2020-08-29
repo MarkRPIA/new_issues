@@ -40,4 +40,8 @@ if __name__ == '__main__':
     # Build X
     X, df = new_issues_preprocessing.add_non_feat_engineered_cols(X, df, verbose)
 
+    # One-hot encode the categorical columns
+    X, df = new_issues_preprocessing.one_hot_encode(X, df, verbose)
+
+    
 

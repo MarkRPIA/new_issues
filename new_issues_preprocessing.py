@@ -263,6 +263,7 @@ def add_non_feat_engineered_cols(X, df, verbose):
     return X, df
 
 
+# One-hot encode the categorical variables
 def one_hot_encode(X, df, verbose):
     df['Rate Type Selection'] = df['Rate Type Selection'].replace('3 month LIBOR', 'LIBOR')  # these are the same
     df = df.rename(columns={
@@ -289,3 +290,66 @@ def one_hot_encode(X, df, verbose):
         print()
 
     return X, df
+
+
+# Helper function for creating the use of proceeds columns
+def get_use_of_proceeds_col(row, field, check_equality):
+    if check_equality:
+        if field == row['UOP 1'].lower():
+            return 2
+        elif field == row['UOP 2'].lower():
+            return 1
+        else:
+            return 0
+    else:
+        if field in row['UOP 1'].lower():
+            return 2
+        elif field in row['UOP 2'].lower():
+            return 1
+        else:
+            return 0
+
+
+def add_use_of_proceeds_cols(X, df, verbose):
+    X['UseOfProceedsAcquisition'] = df.apply(get_use_of_proceeds_col, field="acquisition", check_equality=False,
+                                             axis=1)
+    X['UseOfProceedsCap'] = df.apply(get_use_of_proceeds_col, field="cap", check_equality=True,
+                                     axis=1)  # working capital
+    X['UseOfProceedsCapex'] = df.apply(get_use_of_proceeds_col, field="capital expenditures", check_equality=True,
+                                       axis=1)
+    X['UseOfProceedsDividend'] = df.apply(get_use_of_proceeds_col, field="dividend", check_equality=True,
+                                          axis=1)
+    X['UseOfProceedsGcp'] = df.apply(get_use_of_proceeds_col, field="gcp", check_equality=True,
+                                     axis=1)  # general corporate purposes
+    X['UseOfProceedsGreen'] = df.apply(get_use_of_proceeds_col, field="green", check_equality=True,
+                                       axis=1)  # green bond
+    X['UseOfProceedsLiabilityManagement'] = df.apply(get_use_of_proceeds_col, field="liability management",
+                                                     check_equality=True, axis=1)
+    X['UseOfProceedsPensionContributions'] = df.apply(get_use_of_proceeds_col, field="pension contributions",
+                                                      check_equality=True, axis=1)
+    X['UseOfProceedsRefi'] = df.apply(get_use_of_proceeds_col, field="refi", check_equality=False,
+                                      axis=1)
+    X['UseOfProceedsBridgeLoan'] = df.apply(get_use_of_proceeds_col, field="rolled bridge loan",
+                                            check_equality=True, axis=1)
+    X['UseOfProceedsShareRepurchase'] = df.apply(get_use_of_proceeds_col, field="share repurchase",
+                                                 check_equality=True, axis=1)
+
+    # Drop the columns from df
+
+    df = df.drop(['UOP 1', 'UOP 2'], axis=1)
+
+    if verbose:
+        print('Shape after adding the use of proceeds columns:')
+        print('X: {}'.format(X.shape))
+        print('df: {}'.format(df.shape))
+        print()
+
+    return X, df
+
+
+
+
+
+
+
+

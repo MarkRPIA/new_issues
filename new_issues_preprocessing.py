@@ -36,9 +36,6 @@ def load_data(verbose):
 
 # Drops rows we don't want.
 def drop_rows(df, verbose):
-    if verbose:
-        print('Shape before dropping rows: {}'.format(df.shape))
-
     # Drop rows that are not corps or financials
     df = df.drop(df[(df['Issuer Type'] == 'SOV') | (df['Issuer Type'] == '-')].index)
 
@@ -57,9 +54,6 @@ def drop_rows(df, verbose):
 
 # Drops columns we don't want.
 def drop_cols(df, verbose):
-    if verbose:
-        print('Shape before dropping columns: {}'.format(df.shape))
-
     df = df.drop(['Settlement Date'], axis=1)  # not useful
     df = df.drop(['Bond Ticker', 'Issuer'], axis=1)  # could in theory one-hot encode, but then the input vectors would
     # be way too big
@@ -136,12 +130,6 @@ def drop_cols(df, verbose):
 # Adds columns that will be used directly into X.
 # i.e., columns that don't require any feature engineering.
 def add_non_feat_engineered_cols(X, df, verbose):
-    if verbose:
-        print('Shape before adding non-feature engineered columns:')
-        print('X: {}'.format(X.shape))
-        print('df: {}'.format(df.shape))
-
-    # Add the columns to X
     X['NumBs'] = df['No. of B\'s'].replace('-', 0).astype(float)
     X['IsBailIn'] = df['Bail-in'].replace('Yes', 1).mask(df['Bail-in'] != 'Yes', 0)
     X['NumTranches'] = df['No of Tranches'].astype(float)
@@ -310,6 +298,7 @@ def get_use_of_proceeds_col(row, field, check_equality):
             return 0
 
 
+# Add the use of proceeds columns to X
 def add_use_of_proceeds_cols(X, df, verbose):
     X['UseOfProceedsAcquisition'] = df.apply(get_use_of_proceeds_col, field="acquisition", check_equality=False,
                                              axis=1)
@@ -346,6 +335,41 @@ def add_use_of_proceeds_cols(X, df, verbose):
 
     return X, df
 
+
+# Helper function for creating the distribution columns
+def get_distribution_type_col(row, field, check_equality):
+    if check_equality:
+        if field == row['Distribution'].lower():
+            return 1
+        else:
+            return 0
+    else:
+        if field in row['Distribution'].lower():
+            return 1
+        else:
+            return 0
+
+
+# Add the distribution columns to X
+def add_distribution_cols(X, df, verbose):
+    X['Is144a'] = df.apply(get_distribution_type_col, field="144a", check_equality=False, axis=1)
+    X['IsRegS'] = df.apply(get_distribution_type_col, field="reg s", check_equality=False, axis=1)
+    X['HasRegRights'] = df.apply(get_distribution_type_col, field="reg right", check_equality=False, axis=1)
+    X['Is3a2'] = df.apply(get_distribution_type_col, field="3(a)(2)", check_equality=True, axis=1)
+    X['IsPublicOffering'] = df.apply(get_distribution_type_col, field="public offering", check_equality=True, axis=1)
+    X['IsCD'] = df.apply(get_distribution_type_col, field="cd", check_equality=True, axis=1)
+
+    # Drop the column from df
+
+    df = df.drop('Distribution', axis=1)
+
+    if verbose:
+        print('Shape after adding the distribution columns:')
+        print('X: {}'.format(X.shape))
+        print('df: {}'.format(df.shape))
+        print()
+
+    return X, df
 
 
 

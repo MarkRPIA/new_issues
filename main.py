@@ -14,7 +14,9 @@ import feature_engineering
 ########################################################################################################################
 
 verbose = True
-field = "Performance0"
+
+num_days_performance = 0
+field = 'Performance{}'.format(num_days_performance)
 
 pd.set_option('display.max_columns', None)  # show all columns!
 

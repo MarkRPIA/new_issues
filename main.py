@@ -6,8 +6,8 @@ import multiprocessing
 import pandas as pd
 # import pandas_profiling
 
-import new_issues_preprocessing
-import new_issues_feature_engineering
+import preprocessing
+import feature_engineering
 
 ########################################################################################################################
 # GLOBALS ##############################################################################################################
@@ -32,39 +32,39 @@ if __name__ == '__main__':
     print()
 
     # Load the data
-    df = new_issues_preprocessing.load_data(verbose)
+    df = preprocessing.load_data(verbose)
 
     # Profile the data
     #if verbose:
     #    profile_data(df, 'new_issues_before_preprocessing.html')
 
     # Drop rows and columns
-    df = new_issues_preprocessing.drop_rows(df, verbose)
-    df = new_issues_preprocessing.drop_cols(df, verbose)
+    df = preprocessing.drop_rows(df, verbose)
+    df = preprocessing.drop_cols(df, verbose)
 
     # Create the DataFrame
     X = pd.DataFrame()
 
     # Build X
-    X, df = new_issues_preprocessing.add_non_feat_engineered_cols(X, df, verbose)
+    X, df = preprocessing.add_non_feat_engineered_cols(X, df, verbose)
 
     # One-hot encode the categorical columns
-    X, df = new_issues_preprocessing.one_hot_encode(X, df, verbose)
+    X, df = preprocessing.one_hot_encode(X, df, verbose)
 
     # Create additional columns
-    X, df = new_issues_preprocessing.add_use_of_proceeds_cols(X, df, verbose)
-    X, df = new_issues_preprocessing.add_distribution_cols(X, df, verbose)
-    X, df = new_issues_preprocessing.add_dealer_role_cols(X, df, verbose)
-    X, df = new_issues_preprocessing.add_years(X, df, verbose)
-    X, df = new_issues_preprocessing.add_ratings(X, df, verbose)
-    X, df = new_issues_preprocessing.add_seniority(X, df, verbose)
-    X, df = new_issues_preprocessing.add_deal_info(X, df, verbose)
+    X, df = preprocessing.add_use_of_proceeds_cols(X, df, verbose)
+    X, df = preprocessing.add_distribution_cols(X, df, verbose)
+    X, df = preprocessing.add_dealer_role_cols(X, df, verbose)
+    X, df = preprocessing.add_years(X, df, verbose)
+    X, df = preprocessing.add_ratings(X, df, verbose)
+    X, df = preprocessing.add_seniority(X, df, verbose)
+    X, df = preprocessing.add_deal_info(X, df, verbose)
 
     # Create X_addl (which holds the columns that will be used in some models but not in others)
-    X_addl, df = new_issues_preprocessing.create_X_addl(X, df, verbose)
+    X_addl, df = preprocessing.create_X_addl(X, df, verbose)
 
     # Add the engineered columns
-    X = new_issues_feature_engineering.add_similarity_cols(X, field, verbose)
+    X = feature_engineering.add_similarity_cols(X, field, verbose)
 
     # Profile the data (again)
     # if verbose:
@@ -72,7 +72,7 @@ if __name__ == '__main__':
 
     # MODELS:
 
-    
+
 
 
 

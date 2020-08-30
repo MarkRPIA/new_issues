@@ -780,7 +780,7 @@ def add_years(X, df, verbose):
     return X, df
 
 
-# Add ratings columns to X
+# Add ratings to X
 def add_ratings(X, df, verbose):
     # Convert ratings to values
     df['Moody Rating Value'] = df['Moody’s Rating'].map(rating_to_value)
@@ -819,6 +819,7 @@ def add_ratings(X, df, verbose):
     return X, df
 
 
+# Add seniority to X
 def add_seniority(X, df, verbose):
     X['Rank'] = df['Rank '].map(seniority_to_value)
 
@@ -835,7 +836,60 @@ def add_seniority(X, df, verbose):
     return X, df
 
 
+# Add deal information to X
+def add_deal_info(X, df, verbose):
+    # Compute 'OrderbookSize' from 'Total Deal Size (USD)' and 'Over Subscription'.
+    # Note that we know the orderbook size but not the deal size prior to launch.
+
+    df['Total Deal Size (USD)'] = df['Total Deal Size (USD)'].astype(float)
+    df['Over Subscription'] = df['Over Subscription'].replace('-', 0).replace(np.nan, 0).astype(float)
+
+    X['OrderbookSize'] = df['Total Deal Size (USD)'].multiply(df['Over Subscription'])
+
+    # Compute 'IptToGuidance'
+
+    X['Guidance'] = X['Guidance'].mask(X['Guidance'] == 0, X['IptSpread'])  # if 'Guidance' is 0, set it to 'IptSpread'
+    X['IptToGuidance'] = X['Guidance'].subtract(X['IptSpread'])  # create the column
+
+    if verbose:
+        print('Shape after adding the deal info columns:')
+        print('X: {}'.format(X.shape))
+        print('df: {}'.format(df.shape))
+        print()
+
+    return X, df
 
 
+# Creates the DataFrame x_addl.
+# X_addl holds columns that will be used in some models but not in others.
+def create_X_addl(X, df, verbose):
+    X_addl = pd.DataFrame()
 
+    # 'TotalDealSize' and 'OverSubscription'
+
+    X_addl['TotalDealSize'] = df['Total Deal Size (USD)']
+    X_addl['OverSubscription'] = df['Over Subscription']
+
+    # 'IssueSpread', 'IptToIssueSpread', 'GuidanceToIssueSpread'
+
+    X_addl['IssueSpread'] = df['Spread '].astype(float)
+    X_addl['IptToIssueSpread'] = X_addl['IssueSpread'].subtract(X['IptSpread'])
+    X_addl['IptToIssueSpread'] = X_addl['IptToIssueSpread'].mask(X['IptSpread'] == 0, 0)  # use 0 when 'IptSpread' is 0
+    X_addl['GuidanceToIssueSpread'] = X_addl['IssueSpread'].subtract(X['Guidance'])
+    X_addl['GuidanceToIssueSpread'] = X_addl['GuidanceToIssueSpread'].mask(X['Guidance'] == 0, 0)
+
+    # Drop the columns from df
+
+    df = df.drop(['Total Deal Size (USD)',
+                  'Over Subscription',
+                  'Spread '
+                  ], axis=1)
+
+    if verbose:
+        print('Shape after creating X_addl:')
+        print('X_addl: {}'.format(X_addl.shape))
+        print('df: {}'.format(df.shape))
+        print()
+
+    return X_addl, df
 

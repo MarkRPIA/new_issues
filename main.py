@@ -51,7 +51,15 @@ if __name__ == '__main__':
     X, df = new_issues_preprocessing.add_ratings(X, df, verbose)
     X, df = new_issues_preprocessing.add_seniority(X, df, verbose)
 
+    # Profile the data
+    # if verbose:
+    #    helper_fns.profile_data(df, 'new_issues_after_preprocessing.html')
 
+    # Create X_addl (which holds the columns that will be used in some models but not in others)
+    X_addl, df = new_issues_preprocessing.create_X_addl(X, df, verbose)
+
+    # Add the engineered columns
+    
 
 
 

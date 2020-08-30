@@ -152,6 +152,3 @@ def add_similarity_cols(X, field, verbose):
         print()
 
     return X
-
-
-

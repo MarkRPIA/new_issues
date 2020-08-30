@@ -8,6 +8,7 @@ import pandas as pd
 
 import preprocessing
 import feature_engineering
+import models
 
 ########################################################################################################################
 # GLOBALS ##############################################################################################################
@@ -15,8 +16,17 @@ import feature_engineering
 
 verbose = True
 
-num_days_performance = 0
+num_days_performance = 0  # determines the target variable (we predict the performance from
+                          # the issue date until num_days_performance after the issue date)
 field = 'Performance{}'.format(num_days_performance)
+
+use_X_addl = True  # whether or not we want to include the columns in the DataFrame X_addl
+
+train_size = 0.8
+test_size = 0.2
+
+lower_threshold = 0
+upper_threshold = 0  # set equal to lower_threshold if you only want to split into 2 sets
 
 pd.set_option('display.max_columns', None)  # show all columns!
 
@@ -74,9 +84,12 @@ if __name__ == '__main__':
 
     # MODELS:
 
+    # Random forest
+    print('Random forest:\n')
 
+    n_estimators_rf = 100
+    max_features_rf = 'auto'
+    max_depth_rf = 20
 
-
-
-
-
+    models.run_random_forest(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_threshold,
+                             train_size, test_size, n_estimators_rf, max_features_rf, max_depth_rf)

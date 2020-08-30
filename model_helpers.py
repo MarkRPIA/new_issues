@@ -23,7 +23,7 @@ from yellowbrick.classifier import ROCAUC
 
 # Sets up the training and test data.
 # Note that this splits the target from -inf to lower_threshold, lower_threshold to upper_threshold,
-# and upper_threshold to inf. If lower_threshold == upper_treshold, then it splits the target from -inf
+# and upper_threshold to inf. If lower_threshold == upper_threshold, then it splits the target from -inf
 # to lower_threshold == upper_threshold and lower_threshold == upper_threshold to inf.
 def prepare_training_and_test_data(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_threshold,
                                    train_size, test_size):
@@ -163,25 +163,25 @@ def show_model_stats(clf, X_train, y_train, X_test, y_test, labels, name):
     print()
 
     # Class prediction error
-    visualizer = ClassPredictionError(clf, classes=labels)
-    visualizer.fit(X_train, y_train)
-    visualizer.score(X_test, y_test)
-    visualizer.poof()
+    visualizer1 = ClassPredictionError(clf, classes=labels)
+    visualizer1.fit(X_train, y_train)
+    visualizer1.score(X_test, y_test)
+    visualizer1.show()
 
-    fig = visualizer.ax.get_figure()
+    fig = visualizer1.ax.get_figure()
     fig.savefig('out/class-prediction-error-{}.png'.format(name), transparent=False)
 
     # ROC curve
     if clf.__class__.__name__ == 'SVC':  # if SVM
-        visualizer = ROCAUC(clf, micro=False, macro=False, per_class=False, classes=labels)
+        visualizer2 = ROCAUC(clf, micro=False, macro=False, per_class=False, classes=labels)
     else:
-        visualizer = ROCAUC(clf, classes=labels)
+        visualizer2 = ROCAUC(clf, classes=labels)
 
-    visualizer.fit(X_train, y_train)  # fits the training data to the visualizer
-    visualizer.score(X_test, y_test)  # evaluate the model on test data
-    g = visualizer.poof()
+    visualizer2.fit(X_train, y_train)  # fits the training data to the visualizer
+    visualizer2.score(X_test, y_test)  # evaluate the model on test data
+    visualizer2.show()
 
-    fig = visualizer.ax.get_figure()
+    fig = visualizer2.ax.get_figure()
     fig.savefig('out/roc-curve-{}.png'.format(name), transparent=False)
 
     # Feature importance
@@ -255,5 +255,3 @@ def do_hyperparameter_grid_search(clf, hyperparams, X_train, y_train, cv_splits,
     results.to_csv(results.to_csv('out/gridsearch-{}.csv'.format(name)))
 
     return results
-
-

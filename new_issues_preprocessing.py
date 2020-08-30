@@ -3,7 +3,6 @@
 ########################################################################################################################
 
 import pandas as pd
-# import pandas_profiling
 import numpy as np
 
 
@@ -211,12 +210,6 @@ def load_data(verbose):
         print()
 
     return df
-
-
-# Uses pandas_profiling to perform EDA.
-# def profile_data(df, filename):
-#    profile_report = pandas_profiling.ProfileReport(df)
-#    profile_report.to_file(output_file=filename)
 
 
 # Drops rows we don't want.

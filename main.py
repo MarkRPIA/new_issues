@@ -4,20 +4,28 @@
 
 import multiprocessing
 import pandas as pd
+# import pandas_profiling
 
 import new_issues_preprocessing
+import new_issues_feature_engineering
 
 ########################################################################################################################
 # GLOBALS ##############################################################################################################
 ########################################################################################################################
 
 verbose = True
+field = "Performance0"
 
 pd.set_option('display.max_columns', None)  # show all columns!
 
 ########################################################################################################################
 # MAIN #################################################################################################################
 ########################################################################################################################
+
+# Uses pandas_profiling to perform EDA.
+# def profile_data(df, filename):
+#    profile_report = pandas_profiling.ProfileReport(df)
+#    profile_report.to_file(output_file=filename)
 
 if __name__ == '__main__':
     multiprocessing.freeze_support()  # needed for pandas_profiling
@@ -28,7 +36,7 @@ if __name__ == '__main__':
 
     # Profile the data
     #if verbose:
-    #    helper_fns.profile_data(df, 'new_issues_before_preprocessing.html')
+    #    profile_data(df, 'new_issues_before_preprocessing.html')
 
     # Drop rows and columns
     df = new_issues_preprocessing.drop_rows(df, verbose)
@@ -50,16 +58,23 @@ if __name__ == '__main__':
     X, df = new_issues_preprocessing.add_years(X, df, verbose)
     X, df = new_issues_preprocessing.add_ratings(X, df, verbose)
     X, df = new_issues_preprocessing.add_seniority(X, df, verbose)
-
-    # Profile the data
-    # if verbose:
-    #    helper_fns.profile_data(df, 'new_issues_after_preprocessing.html')
+    X, df = new_issues_preprocessing.add_deal_info(X, df, verbose)
 
     # Create X_addl (which holds the columns that will be used in some models but not in others)
     X_addl, df = new_issues_preprocessing.create_X_addl(X, df, verbose)
 
     # Add the engineered columns
+    X = new_issues_feature_engineering.add_similarity_cols(X, field, verbose)
+
+    # Profile the data (again)
+    # if verbose:
+    #    profile_data(X, 'new_issues_after_preprocessing.html')
+
+    # MODELS:
+
     
+
+
 
 
 

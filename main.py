@@ -48,7 +48,7 @@ if __name__ == '__main__':
     X, df = new_issues_preprocessing.add_distribution_cols(X, df, verbose)
     X, df = new_issues_preprocessing.add_dealer_role_cols(X, df, verbose)
     X, df = new_issues_preprocessing.add_years(X, df, verbose)
-
+    X, df = new_issues_preprocessing.add_ratings(X, df, verbose)
 
 
 

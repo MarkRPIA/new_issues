@@ -11,6 +11,8 @@ import numpy as np
 # GLOBALS ##############################################################################################################
 ########################################################################################################################
 
+# Dealers
+
 # Note that some dealers are listed multiple times under slightly different names
 
 dealer_to_aliases = {'ABN': ['ABN', 'ABN AMRO Bank N.V.'],
@@ -117,6 +119,63 @@ for dealer in mid_tier_dealers:
     mid_tier_dealer_aliases = mid_tier_dealer_aliases + dealer_to_aliases[dealer]
 
 # All other dealers are considered low tier
+
+
+# Ratings
+
+rating_to_value = {
+                    # Moody's
+
+                    'NR': 0.0,
+                    'B3': 1.0,
+                    'B2': 2.0,
+                    'B1': 3.0,
+                    'Ba3': 4.0,
+                    'Ba2': 5.0,
+                    'Ba1': 6.0,
+                    'Baa3': 7.0,
+                    'Baa2': 8.0,
+                    'Baa1': 9.0,
+                    'A3': 10.0,
+                    'A2': 11.0,
+                    'A1': 12.0,
+                    'Aa3': 13.0,
+                    'Aa2': 14.0,
+                    'Aa1': 15.0,
+                    'Aaa': 16.0,
+
+                    # S&P and Fitch
+
+                    'B-': 1.0,
+                    'B': 2.0,
+                    'B+': 3.0,
+                    'BB-': 4.0,
+                    'BB': 5.0,
+                    'BB+': 6.0,
+                    'BBB-': 7.0,
+                    'BBB': 8.0,
+                    'BBB+': 9.0,
+                    'A-': 10.0,
+                    'A': 11.0,
+                    'A+': 12.0,
+                    'AA-': 13.0,
+                    'AA': 14.0,
+                    'AA+': 15.0,
+                    'AAA': 16.0
+                }
+
+# Outlooks
+
+outlook_to_offset = {
+                         'Stable': 0.0,
+                         'Negative': -0.1,          # 10% of the time this ends up meaning a downgrade
+                         'Positive': 0.1,           # 10% of the time this ends up meaning an upgrade
+                         'Negative Watch': -0.5,    # 50% of the time this ends up meaning a downgrade
+                         'Positive Watch': 0.5,     # 50% of the time this ends up meaning an upgrade
+                         'Developing': 0.0
+                     }
+# Note that "Developing" could be positive or negative (ex: announced a merger but we don't yet know if it's being
+# financed with debt or equity)
 
 
 ########################################################################################################################
@@ -706,6 +765,44 @@ def add_years(X, df, verbose):
 
     return X, df
 
+
+# Add ratings columns to X
+def add_ratings(X, df, verbose):
+    # Convert ratings to values
+    df['Moody Rating Value'] = df['Moody’s Rating'].map(rating_to_value)
+    df['Moody Outlook Value'] = df['Moody\'s Outlook'].map(outlook_to_offset)
+
+    df['S&P Rating Value'] = df['S&P Rating'].map(rating_to_value)
+    df['S&P Outlook Value'] = df['S&P Outlook'].map(outlook_to_offset)
+
+    df['Fitch Rating Value'] = df['Fitch Rating'].map(rating_to_value)
+    df['Fitch Outlook Value'] = df['Fitch Outlook'].map(outlook_to_offset)
+
+    # Create 'MoodyRating', 'SpRating', and 'FitchRating'
+    X['MoodyRating'] = df['Moody Rating Value'].add(df['Moody Outlook Value'], fill_value=0.0)
+    X['SpRating'] = df['S&P Rating Value'].add(df['S&P Outlook Value'], fill_value=0.0)
+    X['FitchRating'] = df['Fitch Rating Value'].add(df['Fitch Outlook Value'], fill_value=0.0)
+
+    # Add 'AvgRating'
+    ratings = pd.concat([X['MoodyRating'], X['SpRating'], X['FitchRating']], axis=1)
+    ratings = ratings.replace(0, np.NaN)  # so the mean() will work
+
+    X['AvgRating'] = ratings.mean(axis=1)
+    X['AvgRating'] = X['AvgRating'].replace(np.nan, 0)  # replace null with 0 when there are no ratings at all
+
+    # Drop the columns from df
+
+    df = df.drop(['Moody’s Rating', 'Moody\'s Outlook', 'Moody Rating Value', 'Moody Outlook Value'], axis=1)
+    df = df.drop(['S&P Rating', 'S&P Outlook', 'S&P Rating Value', 'S&P Outlook Value'], axis=1)
+    df = df.drop(['Fitch Rating', 'Fitch Outlook', 'Fitch Rating Value', 'Fitch Outlook Value'], axis=1)
+
+    if verbose:
+        print('Shape after adding the years to call/maturity columns:')
+        print('X: {}'.format(X.shape))
+        print('df: {}'.format(df.shape))
+        print()
+
+    return X, df
 
 
 

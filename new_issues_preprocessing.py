@@ -178,6 +178,20 @@ outlook_to_offset = {
 # financed with debt or equity)
 
 
+# Seniority
+
+seniority_to_value = {
+                        'Preferred': 0.0,
+                        'Jr Sub': 1.0,
+                        'Sub': 2.0,
+                        'Sr Sub': 3.0,
+                        'Sr': 4.0,
+                        'Secured': 5.0,
+                        'FMB': 5.0,  # first mortgage bond
+                        'FA Backed': 5.0  # funding-agreement (backed by a senior claim on the insurer's balance sheet)
+                    }
+
+
 ########################################################################################################################
 # FUNCTIONS ############################################################################################################
 ########################################################################################################################
@@ -797,7 +811,7 @@ def add_ratings(X, df, verbose):
     df = df.drop(['Fitch Rating', 'Fitch Outlook', 'Fitch Rating Value', 'Fitch Outlook Value'], axis=1)
 
     if verbose:
-        print('Shape after adding the years to call/maturity columns:')
+        print('Shape after adding ratings columns:')
         print('X: {}'.format(X.shape))
         print('df: {}'.format(df.shape))
         print()
@@ -805,7 +819,20 @@ def add_ratings(X, df, verbose):
     return X, df
 
 
+def add_seniority(X, df, verbose):
+    X['Rank'] = df['Rank '].map(seniority_to_value)
 
+    # Drop the column from df
+
+    df = df.drop(['Rank '], axis=1)
+
+    if verbose:
+        print('Shape after adding seniority column:')
+        print('X: {}'.format(X.shape))
+        print('df: {}'.format(df.shape))
+        print()
+
+    return X, df
 
 
 

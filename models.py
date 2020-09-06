@@ -78,6 +78,3 @@ def run_random_forest(X, X_addl, use_X_addl, num_days_performance, lower_thresho
 
     model_helpers.show_model_stats(rf_clf, X_train_optimal_features, y_train, X_test_optimal_features, y_test, labels,
                                    "random-forest-optimal-hyperparameters")
-
-
-

@@ -220,7 +220,7 @@ def do_recursive_feature_elimination(clf, X_train, y_train, cv_splits, scoring_f
     print('\nOptimal columns:')
     print(X_train.columns[rfecv.get_support()])
 
-    # Plot number of features VS. cross-validation scores
+    # Plot number of features vs cross-validation scores
     plt.figure(figsize=(16, 10))
     plt.grid(True)
     plt.title('New Issues, {}'.format(name), fontsize=22)

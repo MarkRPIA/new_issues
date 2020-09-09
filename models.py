@@ -5,6 +5,7 @@
 import model_helpers
 
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import SVC
 
 ########################################################################################################################
 # FUNCTIONS ############################################################################################################
@@ -44,7 +45,7 @@ def run_random_forest(X, X_addl, use_X_addl, num_days_performance, lower_thresho
     print('X train: {}'.format(X_train_optimal_features.shape))
     print()
 
-    # Run the Random Forest again on the opimal set of features
+    # Run the Random Forest again on the optimal set of features
     rf_clf = RandomForestClassifier(n_estimators=n_estimators, max_features=max_features, max_depth=max_depth,
                                     bootstrap=True, random_state=7)
     rf_clf.fit(X_train_optimal_features, y_train)
@@ -78,3 +79,22 @@ def run_random_forest(X, X_addl, use_X_addl, num_days_performance, lower_thresho
 
     model_helpers.show_model_stats(rf_clf, X_train_optimal_features, y_train, X_test_optimal_features, y_test, labels,
                                    "random-forest-optimal-hyperparameters")
+
+
+# Runs an SVM model.
+def run_svm(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_threshold, train_size, test_size):
+    # Prepare the data
+    X_train, y_train, X_test, y_test, labels = model_helpers.prepare_training_and_test_data(X, X_addl, use_X_addl,
+                                                                                            num_days_performance,
+                                                                                            lower_threshold,
+                                                                                            upper_threshold, train_size,
+                                                                                            test_size)
+
+    # Run the model
+    svm_clf = SVC(kernel='poly', degree=3, C=10.0, random_state=7)  # linear, poly, rbf, sigmoid
+    svm_clf.fit(X_train, y_train)
+
+    model_helpers.show_model_stats(svm_clf, X_train, y_train, X_test, y_test, labels, 'svm')
+
+
+# Runs a

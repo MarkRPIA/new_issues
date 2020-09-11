@@ -91,4 +91,10 @@ if __name__ == '__main__':
 
     # SVM
     print('SVM:\n')
-    models.run_svm(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_threshold, train_size, test_size)
+    #models.run_svm(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_threshold, train_size, test_size)
+
+    # Logistic regression
+    print('Logistic regression:\n')
+    models.run_logistic_regression(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_threshold,
+                                   train_size, test_size)
+

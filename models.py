@@ -151,12 +151,51 @@ def run_logistic_regression(X, X_addl, use_X_addl, num_days_performance, lower_t
                                                                                             test_size)
 
     # Run the model
-    lr_clf = LogisticRegression(penalty='l2', solver='newton-cg', class_weight=None, C=0.07, random_state=7)
+    lr_clf = LogisticRegression(penalty='l2', C=0.07, class_weight='balanced', max_iter=10000, random_state=7)
     lr_clf.fit(X_train, y_train)
 
     model_helpers.show_model_stats(lr_clf, X_train, y_train, X_test, y_test, labels, 'logistic-regression')
 
-
-
-
     # Do variance threshold feature selection
+    support = model_helpers.do_variance_threshold_feature_selection(X_train, y_train, 1.0)
+    print('The optimal features are: ')
+    print(X_train.columns[support])
+
+    # Get the optimal set of features
+    X_train_optimal_features = X_train.loc[:, support]
+    X_test_optimal_features = X_test.loc[:, support]
+
+    print('Shape after only including the optimal features:')
+    print('X train: {}'.format(X_train_optimal_features.shape))
+    print()
+
+    # Run the logistic regression again on the optimal set of features
+    lr_clf = LogisticRegression(penalty='l2', C=0.07, class_weight='balanced', max_iter=10000, random_state=7)
+    lr_clf.fit(X_train_optimal_features, y_train)
+
+    model_helpers.show_model_stats(lr_clf, X_train_optimal_features, y_train, X_test_optimal_features, y_test, labels,
+                                   "logistic-regression-optimal-features")
+
+    # Do hyperparameter grid search
+    lr_hyperparams = {
+        'C': [0.001, 0.01, 0.10, 0.50, 1.0, 10.0]
+    }
+
+    lr_clf = LogisticRegression(penalty='l2', C=0.07, class_weight='balanced', max_iter=10000, random_state=7)
+
+    initial_train_size = 500
+    val_size = 100
+    cv_splits = model_helpers.get_cv_splits(X_train, initial_train_size, val_size)
+
+    results = model_helpers.do_hyperparameter_grid_search(lr_clf, lr_hyperparams, X_train_optimal_features, y_train,
+                                                          cv_splits, 'accuracy', 'logistic-regression')
+
+    print('The results of the logistic regression hyperparameter grid search are as follows:')
+    print(results)
+
+    # Run the logistic regression again on the optimal set of hyperparameters
+    lr_clf = LogisticRegression(penalty='l2', C=0.01, class_weight='balanced', max_iter=10000, random_state=7)
+    lr_clf.fit(X_train_optimal_features, y_train)
+
+    model_helpers.show_model_stats(lr_clf, X_train_optimal_features, y_train, X_test_optimal_features, y_test, labels,
+                                   "logistic-regression-optimal-hyperparameters")

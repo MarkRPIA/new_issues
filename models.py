@@ -65,7 +65,7 @@ def run_random_forest(X, X_addl, use_X_addl, num_days_performance, lower_thresho
 
     cv_splits = model_helpers.get_cv_splits(X_train, initial_train_size, val_size)
     results = model_helpers.do_hyperparameter_grid_search(rf_clf, rf_hyperparams, X_train_optimal_features, y_train,
-                                                          cv_splits, 'roc_auc_ovo', 'random-forest-grid-search')
+                                                          cv_splits, 'roc_auc_ovo', 'random-forest')
 
     print('The results of the random forest hyperparameter grid search are as follows:')
     print(results)
@@ -127,13 +127,13 @@ def run_svm(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_
     cv_splits = model_helpers.get_cv_splits(X_train, initial_train_size, val_size)
 
     results = model_helpers.do_hyperparameter_grid_search(svm_clf, svm_hyperparams, X_train_optimal_features, y_train,
-                                                          cv_splits, 'accuracy', 'svm-grid-search')
+                                                          cv_splits, 'accuracy', 'svm')
 
     print('The results of the SVM hyperparameter grid search are as follows:')
     print(results)
 
     # Run the SVM again on the optimal set of hyperparameters
-    svm_clf = SVC(kernel='poly', C=10.0, random_state=7)
+    svm_clf = SVC(kernel='sigmoid', C=0.5, random_state=7)
     svm_clf.fit(X_train_optimal_features, y_train)
 
     model_helpers.show_model_stats(svm_clf, X_train_optimal_features, y_train, X_test_optimal_features, y_test, labels,

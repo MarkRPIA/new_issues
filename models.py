@@ -6,6 +6,7 @@ import model_helpers
 
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
+from sklearn.linear_model import LogisticRegression
 
 ########################################################################################################################
 # FUNCTIONS ############################################################################################################
@@ -13,8 +14,8 @@ from sklearn.svm import SVC
 
 
 # Optimizes and runs a random forest model.
-def run_random_forest(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_threshold,
-                      train_size, test_size, n_estimators, max_features, max_depth):
+def run_random_forest(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_threshold, train_size,
+                      test_size):
     # Prepare the data
     X_train, y_train, X_test, y_test, labels = model_helpers.prepare_training_and_test_data(X, X_addl, use_X_addl,
                                                                                             num_days_performance,
@@ -23,8 +24,7 @@ def run_random_forest(X, X_addl, use_X_addl, num_days_performance, lower_thresho
                                                                                             test_size)
 
     # Run the model
-    rf_clf = RandomForestClassifier(n_estimators=n_estimators, max_features=max_features, max_depth=max_depth,
-                                    bootstrap=True, random_state=7)
+    rf_clf = RandomForestClassifier(n_estimators=100, max_features='auto', max_depth=20, bootstrap=True, random_state=7)
     rf_clf.fit(X_train, y_train)
 
     model_helpers.show_model_stats(rf_clf, X_train, y_train, X_test, y_test, labels, "random-forest")
@@ -46,8 +46,7 @@ def run_random_forest(X, X_addl, use_X_addl, num_days_performance, lower_thresho
     print()
 
     # Run the Random Forest again on the optimal set of features
-    rf_clf = RandomForestClassifier(n_estimators=n_estimators, max_features=max_features, max_depth=max_depth,
-                                    bootstrap=True, random_state=7)
+    rf_clf = RandomForestClassifier(n_estimators=100, max_features='auto', max_depth=20, bootstrap=True, random_state=7)
     rf_clf.fit(X_train_optimal_features, y_train)
 
     model_helpers.show_model_stats(rf_clf, X_train_optimal_features, y_train, X_test_optimal_features, y_test, labels,
@@ -62,8 +61,7 @@ def run_random_forest(X, X_addl, use_X_addl, num_days_performance, lower_thresho
         'max_leaf_nodes': [None, 25, 50, 100, 200]
     }
 
-    rf_clf = RandomForestClassifier(n_estimators=n_estimators, max_features=max_features, max_depth=max_depth,
-                                    bootstrap=True, random_state=7)
+    rf_clf = RandomForestClassifier(n_estimators=100, max_features='auto', max_depth=20, bootstrap=True, random_state=7)
 
     cv_splits = model_helpers.get_cv_splits(X_train, initial_train_size, val_size)
     results = model_helpers.do_hyperparameter_grid_search(rf_clf, rf_hyperparams, X_train_optimal_features, y_train,
@@ -91,10 +89,74 @@ def run_svm(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_
                                                                                             test_size)
 
     # Run the model
-    svm_clf = SVC(kernel='poly', degree=3, C=10.0, random_state=7)  # linear, poly, rbf, sigmoid
+    svm_clf = SVC(kernel='poly', C=10.0, random_state=7)  # linear, poly, rbf, sigmoid
     svm_clf.fit(X_train, y_train)
 
     model_helpers.show_model_stats(svm_clf, X_train, y_train, X_test, y_test, labels, 'svm')
 
+    # Do variance threshold feature selection
+    support = model_helpers.do_variance_threshold_feature_selection(X_train, y_train, 1.0)
+    print('The optimal features are: ')
+    print(X_train.columns[support])
 
-# Runs a
+    # Get the optimal set of features
+    X_train_optimal_features = X_train.loc[:, support]
+    X_test_optimal_features = X_test.loc[:, support]
+
+    print('Shape after only including the optimal features:')
+    print('X train: {}'.format(X_train_optimal_features.shape))
+    print()
+
+    # Run the SVM again on the optimal set of features
+    svm_clf = SVC(kernel='poly', C=10.0, random_state=7)
+    svm_clf.fit(X_train_optimal_features, y_train)
+
+    model_helpers.show_model_stats(svm_clf, X_train_optimal_features, y_train, X_test_optimal_features, y_test, labels,
+                                   "svm-optimal-features")
+
+    # Do hyperparameter grid search
+    svm_hyperparams = {
+        'C': [0.001, 0.01, 0.10, 0.50, 1.0, 10.0],
+        'kernel': ['linear', 'poly', 'rbf', 'sigmoid']
+    }
+
+    svm_clf = SVC(kernel='poly', C=10.0, random_state=7)
+
+    initial_train_size = 500
+    val_size = 100
+    cv_splits = model_helpers.get_cv_splits(X_train, initial_train_size, val_size)
+
+    results = model_helpers.do_hyperparameter_grid_search(svm_clf, svm_hyperparams, X_train_optimal_features, y_train,
+                                                          cv_splits, 'accuracy', 'svm-grid-search')
+
+    print('The results of the SVM hyperparameter grid search are as follows:')
+    print(results)
+
+    # Run the SVM again on the optimal set of hyperparameters
+    svm_clf = SVC(kernel='poly', C=10.0, random_state=7)
+    svm_clf.fit(X_train_optimal_features, y_train)
+
+    model_helpers.show_model_stats(svm_clf, X_train_optimal_features, y_train, X_test_optimal_features, y_test, labels,
+                                   "svm-optimal-hyperparameters")
+
+
+# Runs an logistic regression model.
+def run_logistic_regression(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_threshold, train_size,
+                            test_size):
+    # Prepare the data
+    X_train, y_train, X_test, y_test, labels = model_helpers.prepare_training_and_test_data(X, X_addl, use_X_addl,
+                                                                                            num_days_performance,
+                                                                                            lower_threshold,
+                                                                                            upper_threshold, train_size,
+                                                                                            test_size)
+
+    # Run the model
+    lr_clf = LogisticRegression(penalty='l2', solver='newton-cg', class_weight=None, C=0.07, random_state=7)
+    lr_clf.fit(X_train, y_train)
+
+    model_helpers.show_model_stats(lr_clf, X_train, y_train, X_test, y_test, labels, 'logistic-regression')
+
+
+
+
+    # Do variance threshold feature selection

@@ -11,6 +11,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import plot_confusion_matrix
 from sklearn.metrics import classification_report
 from sklearn.feature_selection import RFECV
+from sklearn.feature_selection import VarianceThreshold
 from sklearn.model_selection import GridSearchCV
 
 from yellowbrick.classifier import ClassPredictionError
@@ -233,6 +234,21 @@ def do_recursive_feature_elimination(clf, X_train, y_train, cv_splits, scoring_f
     plt.savefig('out/recursive-feature-elimination-{}.png'.format(name))
 
     return rfecv
+
+
+# Helper function to do variance threshold feature selection.
+# This is for models that don't expose "coef_" or "feature_importances_".
+def do_variance_threshold_feature_selection(X_train, y_train, variance_threshold):
+    sel = VarianceThreshold(threshold=variance_threshold)
+    sel.fit(X_train, y_train)
+
+    print('\nVariances:')
+    print(sel.variances_)
+    print('\nSupport:')
+    print(sel.get_support())
+    print('\n# of selected features = {}'.format(sum(sel.get_support())))
+
+    return sel.get_support()
 
 
 # Helper function to do hyperparameter grid search

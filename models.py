@@ -30,7 +30,7 @@ def run_random_forest(X, X_addl, use_X_addl, num_days_performance, lower_thresho
     rf_clf = RandomForestClassifier(n_estimators=100, max_features='auto', max_depth=20, bootstrap=True, random_state=7)
     rf_clf.fit(X_train, y_train)
 
-    model_helpers.show_model_stats(rf_clf, X_train, y_train, X_test, y_test, labels, "random-forest")
+    model_helpers.show_model_stats(rf_clf, X_train, y_train, X_test, y_test, labels, "random-forest-categorized")
 
     # Do recursive feature elimination
     initial_train_size = 500
@@ -38,7 +38,7 @@ def run_random_forest(X, X_addl, use_X_addl, num_days_performance, lower_thresho
 
     cv_splits = model_helpers.get_cv_splits(X_train, initial_train_size, val_size)
     rf_rfecv = model_helpers.do_recursive_feature_elimination(rf_clf, X_train, y_train, cv_splits, 'roc_auc_ovo',
-                                                              'random-forest')
+                                                              'random-forest-categorized')
 
     # Get the optimal set of features
     X_train_optimal_features = X_train[X_train.columns[rf_rfecv.get_support()]]
@@ -53,7 +53,7 @@ def run_random_forest(X, X_addl, use_X_addl, num_days_performance, lower_thresho
     rf_clf.fit(X_train_optimal_features, y_train)
 
     model_helpers.show_model_stats(rf_clf, X_train_optimal_features, y_train, X_test_optimal_features, y_test, labels,
-                                   "random-forest-optimal-features")
+                                   "random-forest-optimal-features-categorized")
 
     # Do hyperparameter grid search
     rf_hyperparams = {
@@ -68,7 +68,7 @@ def run_random_forest(X, X_addl, use_X_addl, num_days_performance, lower_thresho
 
     cv_splits = model_helpers.get_cv_splits(X_train, initial_train_size, val_size)
     results = model_helpers.do_hyperparameter_grid_search(rf_clf, rf_hyperparams, X_train_optimal_features, y_train,
-                                                          cv_splits, 'roc_auc_ovo', 'random-forest')
+                                                          cv_splits, 'roc_auc_ovo', 'random-forest-categorized')
 
     print('The results of the random forest hyperparameter grid search are as follows:')
     print(results)
@@ -79,7 +79,7 @@ def run_random_forest(X, X_addl, use_X_addl, num_days_performance, lower_thresho
     rf_clf.fit(X_train_optimal_features, y_train)
 
     model_helpers.show_model_stats(rf_clf, X_train_optimal_features, y_train, X_test_optimal_features, y_test, labels,
-                                   "random-forest-optimal-hyperparameters")
+                                   "random-forest-optimal-hyperparameters-categorized")
 
 
 # Optimizes and runs the SVM models.
@@ -95,7 +95,7 @@ def run_svm(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_
     svm_clf = SVC(kernel='poly', C=10.0, random_state=7)  # linear, poly, rbf, sigmoid
     svm_clf.fit(X_train, y_train)
 
-    model_helpers.show_model_stats(svm_clf, X_train, y_train, X_test, y_test, labels, 'svm')
+    model_helpers.show_model_stats(svm_clf, X_train, y_train, X_test, y_test, labels, 'svm-categorized')
 
     # Do variance threshold feature selection
     support = model_helpers.do_variance_threshold_feature_selection(X_train, y_train, 1.0)
@@ -115,7 +115,7 @@ def run_svm(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_
     svm_clf.fit(X_train_optimal_features, y_train)
 
     model_helpers.show_model_stats(svm_clf, X_train_optimal_features, y_train, X_test_optimal_features, y_test, labels,
-                                   "svm-optimal-features")
+                                   "svm-optimal-features-categorized")
 
     # Do hyperparameter grid search
     svm_hyperparams = {
@@ -130,7 +130,7 @@ def run_svm(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_
     cv_splits = model_helpers.get_cv_splits(X_train, initial_train_size, val_size)
 
     results = model_helpers.do_hyperparameter_grid_search(svm_clf, svm_hyperparams, X_train_optimal_features, y_train,
-                                                          cv_splits, 'accuracy', 'svm')
+                                                          cv_splits, 'accuracy', 'svm-categorized')
 
     print('The results of the SVM hyperparameter grid search are as follows:')
     print(results)
@@ -140,7 +140,7 @@ def run_svm(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_
     svm_clf.fit(X_train_optimal_features, y_train)
 
     model_helpers.show_model_stats(svm_clf, X_train_optimal_features, y_train, X_test_optimal_features, y_test, labels,
-                                   "svm-optimal-hyperparameters")
+                                   "svm-optimal-hyperparameters-categorized")
 
 
 # Optimizes and runs the logistic regression models.
@@ -157,7 +157,7 @@ def run_logistic_regression(X, X_addl, use_X_addl, num_days_performance, lower_t
     lr_clf = LogisticRegression(penalty='l2', C=0.07, class_weight='balanced', max_iter=10000, random_state=7)
     lr_clf.fit(X_train, y_train)
 
-    model_helpers.show_model_stats(lr_clf, X_train, y_train, X_test, y_test, labels, 'logistic-regression')
+    model_helpers.show_model_stats(lr_clf, X_train, y_train, X_test, y_test, labels, 'logistic-regression-categorized')
 
     # Do variance threshold feature selection
     support = model_helpers.do_variance_threshold_feature_selection(X_train, y_train, 1.0)
@@ -177,7 +177,7 @@ def run_logistic_regression(X, X_addl, use_X_addl, num_days_performance, lower_t
     lr_clf.fit(X_train_optimal_features, y_train)
 
     model_helpers.show_model_stats(lr_clf, X_train_optimal_features, y_train, X_test_optimal_features, y_test, labels,
-                                   "logistic-regression-optimal-features")
+                                   "logistic-regression-optimal-features-categorized")
 
     # Do hyperparameter grid search
     lr_hyperparams = {
@@ -191,7 +191,7 @@ def run_logistic_regression(X, X_addl, use_X_addl, num_days_performance, lower_t
     cv_splits = model_helpers.get_cv_splits(X_train, initial_train_size, val_size)
 
     results = model_helpers.do_hyperparameter_grid_search(lr_clf, lr_hyperparams, X_train_optimal_features, y_train,
-                                                          cv_splits, 'accuracy', 'logistic-regression')
+                                                          cv_splits, 'accuracy', 'logistic-regression-categorized')
 
     print('The results of the logistic regression hyperparameter grid search are as follows:')
     print(results)
@@ -201,7 +201,7 @@ def run_logistic_regression(X, X_addl, use_X_addl, num_days_performance, lower_t
     lr_clf.fit(X_train_optimal_features, y_train)
 
     model_helpers.show_model_stats(lr_clf, X_train_optimal_features, y_train, X_test_optimal_features, y_test, labels,
-                                   "logistic-regression-optimal-hyperparameters")
+                                   "logistic-regression-optimal-hyperparameters-categorized")
 
 
 # Optimizes and runs the naive Bayes models.
@@ -218,7 +218,7 @@ def run_naive_bayes(X, X_addl, use_X_addl, num_days_performance, lower_threshold
     nb_clf = GaussianNB()
     nb_clf.fit(X_train, y_train)
 
-    model_helpers.show_model_stats(nb_clf, X_train, y_train, X_test, y_test, labels, 'naive-bayes')
+    model_helpers.show_model_stats(nb_clf, X_train, y_train, X_test, y_test, labels, 'naive-bayes-categorized')
 
     # Do variance threshold feature selection
     support = model_helpers.do_variance_threshold_feature_selection(X_train, y_train, 1.0)
@@ -238,7 +238,7 @@ def run_naive_bayes(X, X_addl, use_X_addl, num_days_performance, lower_threshold
     nb_clf.fit(X_train_optimal_features, y_train)
 
     model_helpers.show_model_stats(nb_clf, X_train_optimal_features, y_train, X_test_optimal_features, y_test, labels,
-                                   "naive-bayes-optimal-features")
+                                   "naive-bayes-optimal-features-categorized")
 
 
 # Optimizes and runs the KNN models.
@@ -254,7 +254,7 @@ def run_knn(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_
     knn_clf = KNeighborsClassifier(n_neighbors=5)
     knn_clf.fit(X_train, y_train)
 
-    model_helpers.show_model_stats(knn_clf, X_train, y_train, X_test, y_test, labels, 'knn')
+    model_helpers.show_model_stats(knn_clf, X_train, y_train, X_test, y_test, labels, 'knn-categorized')
 
     # Do variance threshold feature selection
     support = model_helpers.do_variance_threshold_feature_selection(X_train, y_train, 1.0)
@@ -274,7 +274,7 @@ def run_knn(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_
     knn_clf.fit(X_train_optimal_features, y_train)
 
     model_helpers.show_model_stats(knn_clf, X_train_optimal_features, y_train, X_test_optimal_features, y_test, labels,
-                                   "knn_clf-optimal-features")
+                                   "knn-optimal-features-categorized")
 
     # Do hyperparameter grid search
     knn_hyperparams = {
@@ -288,7 +288,7 @@ def run_knn(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_
     cv_splits = model_helpers.get_cv_splits(X_train, initial_train_size, val_size)
 
     results = model_helpers.do_hyperparameter_grid_search(knn_clf, knn_hyperparams, X_train_optimal_features, y_train,
-                                                          cv_splits, 'accuracy', 'knn')
+                                                          cv_splits, 'accuracy', 'knn-categorized')
 
     print('The results of the KNN hyperparameter grid search are as follows:')
     print(results)
@@ -298,4 +298,4 @@ def run_knn(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_
     knn_clf.fit(X_train_optimal_features, y_train)
 
     model_helpers.show_model_stats(knn_clf, X_train_optimal_features, y_train, X_test_optimal_features, y_test, labels,
-                                   "knn-optimal-hyperparameters")
+                                   "knn-optimal-hyperparameters-categorized")

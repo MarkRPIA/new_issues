@@ -929,7 +929,7 @@ def categorize_numerical_col(X, col_name, categories):
 # Categorizes numerical columns of X.
 # Note that I chose the categories below based on my domain expertise. For example, I chose to use [15, 30, 45] for the
 # categories of VIX since <= 15 represents a low VIX, 15 to 30 is medium, 30 to 45 is high, and above 45 is very high.
-def categorize_numerical_cols(X):
+def categorize_numerical_cols(X, verbose):
     # Categorize the numerical columns
     X = categorize_numerical_col(X, 'CouponRate', 3)
     X = categorize_numerical_col(X, 'IptSpread', 4)
@@ -1014,5 +1014,10 @@ def categorize_numerical_cols(X):
 
     # Drop the columns from X
     X = X.drop(categorical_cols, axis=1)
+
+    if verbose:
+        print('Shape after categorizing numerical columns:')
+        print('X: {}'.format(X.shape))
+        print()
 
     return X

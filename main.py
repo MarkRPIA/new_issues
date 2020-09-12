@@ -79,7 +79,7 @@ if __name__ == '__main__':
     X = feature_engineering.add_similarity_cols(X, field, verbose)
 
     # Categorize numerical columns
-    X = preprocessing.categorize_numerical_cols(X)
+    X = preprocessing.categorize_numerical_cols(X, verbose)
 
     # Profile the data (again)
     # if verbose:

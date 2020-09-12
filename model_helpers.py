@@ -61,48 +61,6 @@ def prepare_training_and_test_data(X, X_addl, use_X_addl, num_days_performance, 
     le = LabelEncoder()
     y = le.fit_transform(y)
 
-    # Scale (note that I leave binary columns alone)
-    standard_scaler_cols = ['NumBs',
-                            'NumTranches',
-                            'CouponRate',
-                            'IptSpread',
-                            'Guidance',
-                            'Area',
-                            'Concession',
-                            'NumBookrunners',
-                            'NumActiveBookrunners',
-                            'NumPassiveBookrunners',
-                            'ParAmt',
-                            'Vix',
-                            'Vix5d',
-                            'Srvix',
-                            'Srvix5d',
-                            'CdxIg',
-                            'CdxIg5d',
-                            'Usgg2y',
-                            'Usgg2y5d',
-                            'Usgg3y',
-                            'Usgg3y5d',
-                            'Usgg5y',
-                            'Usgg5y5d',
-                            'Usgg10y',
-                            'Usgg10y5d',
-                            'Usgg30y',
-                            'Usgg30y5d',
-                            'EnterpriseValue',
-                            'YearsToCall',
-                            'YearsToMaturity',
-                            'MoodyRating',
-                            'SpRating',
-                            'FitchRating',
-                            'AvgRating',
-                            'Rank',
-                            'OrderbookSize',
-                            'IptToGuidance']
-
-    scaler = StandardScaler()
-    X[standard_scaler_cols] = scaler.fit_transform(X[standard_scaler_cols])
-
     # Split into training and test data
     n = len(X)
     train_end_ind = int(n * train_size)

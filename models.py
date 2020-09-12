@@ -136,7 +136,7 @@ def run_svm(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_
     print(results)
 
     # Run the SVM again on the optimal set of hyperparameters
-    svm_clf = SVC(kernel='sigmoid', C=0.5, random_state=7)
+    svm_clf = SVC(kernel='rbf', C=0.1, random_state=7)
     svm_clf.fit(X_train_optimal_features, y_train)
 
     model_helpers.show_model_stats(svm_clf, X_train_optimal_features, y_train, X_test_optimal_features, y_test, labels,

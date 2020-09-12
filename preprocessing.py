@@ -283,8 +283,7 @@ def drop_cols(df, verbose):
     df = df.drop(['Gross Spread '], axis=1)  # how much the syndicate is taking, not useful
     df = df.drop(['Total Fees'], axis=1)  # total fees including gross spread, lawyer fees, etc., not useful
     df = df.drop(['Co1', 'Co 2', 'Co 3', 'Co 4', 'Co 5'], axis=1)  # Cos don't even get books, they have nothing to do
-    # with the actual deal (they only get involved for
-    # relationship reasons amongst the dealers)
+    # with the actual deal (they only get involved for relationship reasons amongst the dealers)
     df = df.drop(['IsDM'], axis=1)  # same as floating coupon type
     df = df.drop(['IsSpread'], axis=1)  # get this from coupon type and IsYield
     df = df.drop(['IssueBenchmark'], axis=1)  # not useful

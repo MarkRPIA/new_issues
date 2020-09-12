@@ -197,7 +197,7 @@ def run_logistic_regression(X, X_addl, use_X_addl, num_days_performance, lower_t
     print(results)
 
     # Run the logistic regression again on the optimal set of hyperparameters
-    lr_clf = LogisticRegression(penalty='l2', C=0.01, class_weight='balanced', max_iter=10000, random_state=7)
+    lr_clf = LogisticRegression(penalty='l2', C=10.0, class_weight='balanced', max_iter=10000, random_state=7)
     lr_clf.fit(X_train_optimal_features, y_train)
 
     model_helpers.show_model_stats(lr_clf, X_train_optimal_features, y_train, X_test_optimal_features, y_test, labels,

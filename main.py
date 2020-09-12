@@ -94,14 +94,14 @@ if __name__ == '__main__':
     #models.run_svm(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_threshold, train_size, test_size)
 
     # Logistic regression
-    print('Logistic regression:\n')
-    models.run_logistic_regression(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_threshold,
-                                   train_size, test_size)
+    #print('Logistic regression:\n')
+    #models.run_logistic_regression(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_threshold,
+    #                               train_size, test_size)
 
     # Naive Bayes
-    #print('Naive Bayes:\n')
-    #models.run_naive_bayes(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_threshold,
-    #                       train_size, test_size)
+    print('Naive Bayes:\n')
+    models.run_naive_bayes(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_threshold,
+                           train_size, test_size)
 
     # KNN
     #print('KNN:\n')

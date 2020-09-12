@@ -73,7 +73,7 @@ def prepare_training_and_test_data(X, X_addl, use_X_addl, num_days_performance, 
     X_train = X[0:train_end_ind]
     y_train = y[0:train_end_ind]
 
-    # Oversample the minority class
+    # Oversample the minority classes
     rs = RandomOverSampler(sampling_strategy=1, random_state=7)
     X_train, y_train = rs.fit_resample(X_train, y_train)
 

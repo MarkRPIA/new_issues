@@ -7,13 +7,15 @@ import model_helpers
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
 from sklearn.linear_model import LogisticRegression
+from sklearn.naive_bayes import GaussianNB
+
 
 ########################################################################################################################
 # FUNCTIONS ############################################################################################################
 ########################################################################################################################
 
 
-# Optimizes and runs a random forest model.
+# Optimizes and runs the random forest models.
 def run_random_forest(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_threshold, train_size,
                       test_size):
     # Prepare the data
@@ -79,7 +81,7 @@ def run_random_forest(X, X_addl, use_X_addl, num_days_performance, lower_thresho
                                    "random-forest-optimal-hyperparameters")
 
 
-# Runs an SVM model.
+# Optimizes and runs the SVM models.
 def run_svm(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_threshold, train_size, test_size):
     # Prepare the data
     X_train, y_train, X_test, y_test, labels = model_helpers.prepare_training_and_test_data(X, X_addl, use_X_addl,
@@ -140,7 +142,7 @@ def run_svm(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_
                                    "svm-optimal-hyperparameters")
 
 
-# Runs an logistic regression model.
+# Optimizes and runs the logistic regression models.
 def run_logistic_regression(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_threshold, train_size,
                             test_size):
     # Prepare the data
@@ -199,3 +201,40 @@ def run_logistic_regression(X, X_addl, use_X_addl, num_days_performance, lower_t
 
     model_helpers.show_model_stats(lr_clf, X_train_optimal_features, y_train, X_test_optimal_features, y_test, labels,
                                    "logistic-regression-optimal-hyperparameters")
+
+
+# Optimizes and runs the naive Bayes models.
+def run_naive_bayes(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_threshold, train_size,
+                    test_size):
+    # Prepare the data
+    X_train, y_train, X_test, y_test, labels = model_helpers.prepare_training_and_test_data(X, X_addl, use_X_addl,
+                                                                                            num_days_performance,
+                                                                                            lower_threshold,
+                                                                                            upper_threshold, train_size,
+                                                                                            test_size)
+
+    # Run the model
+    nb_clf = GaussianNB()
+    nb_clf.fit(X_train, y_train)
+
+    model_helpers.show_model_stats(nb_clf, X_train, y_train, X_test, y_test, labels, 'naive-bayes')
+
+    # Do variance threshold feature selection
+    support = model_helpers.do_variance_threshold_feature_selection(X_train, y_train, 1.0)
+    print('The optimal features are: ')
+    print(X_train.columns[support])
+
+    # Get the optimal set of features
+    X_train_optimal_features = X_train.loc[:, support]
+    X_test_optimal_features = X_test.loc[:, support]
+
+    print('Shape after only including the optimal features:')
+    print('X train: {}'.format(X_train_optimal_features.shape))
+    print()
+
+    # Run the naive Bayes again on the optimal set of features
+    nb_clf = GaussianNB()
+    nb_clf.fit(X_train_optimal_features, y_train)
+
+    model_helpers.show_model_stats(nb_clf, X_train_optimal_features, y_train, X_test_optimal_features, y_test, labels,
+                                   "naive-bayes-optimal-features")

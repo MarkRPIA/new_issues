@@ -202,6 +202,10 @@ def load_data(verbose):
 
     df = pd.read_csv('new_issue_data.csv', encoding='utf-8-sig')
 
+    # Sort by 'Pricing Date' (which is the true issue date)
+    df['Pricing Date'] = pd.to_datetime(df['Pricing Date'])
+    df = df.sort_values(by=['Pricing Date'])
+
     if verbose:
         print('Columns: {}'.format(list(df)))
         print('Shape: {}'.format(df.shape))

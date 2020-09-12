@@ -53,7 +53,7 @@ def run_random_forest(X, X_addl, use_X_addl, num_days_performance, lower_thresho
     rf_clf.fit(X_train_optimal_features, y_train)
 
     model_helpers.show_model_stats(rf_clf, X_train_optimal_features, y_train, X_test_optimal_features, y_test, labels,
-                                   "random-forest-optimal-features-categorized")
+                                   "random-forest-categorized-optimal-features")
 
     # Do hyperparameter grid search
     rf_hyperparams = {
@@ -79,7 +79,7 @@ def run_random_forest(X, X_addl, use_X_addl, num_days_performance, lower_thresho
     rf_clf.fit(X_train_optimal_features, y_train)
 
     model_helpers.show_model_stats(rf_clf, X_train_optimal_features, y_train, X_test_optimal_features, y_test, labels,
-                                   "random-forest-optimal-hyperparameters-categorized")
+                                   "random-forest-categorized-optimal-hyperparameters")
 
 
 # Optimizes and runs the SVM models.
@@ -115,7 +115,7 @@ def run_svm(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_
     svm_clf.fit(X_train_optimal_features, y_train)
 
     model_helpers.show_model_stats(svm_clf, X_train_optimal_features, y_train, X_test_optimal_features, y_test, labels,
-                                   "svm-optimal-features-categorized")
+                                   "svm-categorized-optimal-features")
 
     # Do hyperparameter grid search
     svm_hyperparams = {
@@ -140,7 +140,7 @@ def run_svm(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_
     svm_clf.fit(X_train_optimal_features, y_train)
 
     model_helpers.show_model_stats(svm_clf, X_train_optimal_features, y_train, X_test_optimal_features, y_test, labels,
-                                   "svm-optimal-hyperparameters-categorized")
+                                   "svm-categorized-optimal-hyperparameters")
 
 
 # Optimizes and runs the logistic regression models.
@@ -177,7 +177,7 @@ def run_logistic_regression(X, X_addl, use_X_addl, num_days_performance, lower_t
     lr_clf.fit(X_train_optimal_features, y_train)
 
     model_helpers.show_model_stats(lr_clf, X_train_optimal_features, y_train, X_test_optimal_features, y_test, labels,
-                                   "logistic-regression-optimal-features-categorized")
+                                   "logistic-regression-categorized-optimal-features")
 
     # Do hyperparameter grid search
     lr_hyperparams = {
@@ -201,7 +201,7 @@ def run_logistic_regression(X, X_addl, use_X_addl, num_days_performance, lower_t
     lr_clf.fit(X_train_optimal_features, y_train)
 
     model_helpers.show_model_stats(lr_clf, X_train_optimal_features, y_train, X_test_optimal_features, y_test, labels,
-                                   "logistic-regression-optimal-hyperparameters-categorized")
+                                   "logistic-regression-categorized-optimal-hyperparameters")
 
 
 # Optimizes and runs the naive Bayes models.
@@ -238,7 +238,7 @@ def run_naive_bayes(X, X_addl, use_X_addl, num_days_performance, lower_threshold
     nb_clf.fit(X_train_optimal_features, y_train)
 
     model_helpers.show_model_stats(nb_clf, X_train_optimal_features, y_train, X_test_optimal_features, y_test, labels,
-                                   "naive-bayes-optimal-features-categorized")
+                                   "naive-bayes-categorized-optimal-features")
 
 
 # Optimizes and runs the KNN models.
@@ -274,7 +274,7 @@ def run_knn(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_
     knn_clf.fit(X_train_optimal_features, y_train)
 
     model_helpers.show_model_stats(knn_clf, X_train_optimal_features, y_train, X_test_optimal_features, y_test, labels,
-                                   "knn-optimal-features-categorized")
+                                   "knn-categorized-optimal-features")
 
     # Do hyperparameter grid search
     knn_hyperparams = {
@@ -294,8 +294,8 @@ def run_knn(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_
     print(results)
 
     # Run the KNN again on the optimal set of hyperparameters
-    knn_clf = KNeighborsClassifier(n_neighbors=40)
+    knn_clf = KNeighborsClassifier(n_neighbors=1)
     knn_clf.fit(X_train_optimal_features, y_train)
 
     model_helpers.show_model_stats(knn_clf, X_train_optimal_features, y_train, X_test_optimal_features, y_test, labels,
-                                   "knn-optimal-hyperparameters-categorized")
+                                   "knn-categorized-optimal-hyperparameters")

@@ -17,6 +17,9 @@ from sklearn.model_selection import GridSearchCV
 from yellowbrick.classifier import ClassPredictionError
 from yellowbrick.classifier import ROCAUC
 
+from imblearn.over_sampling import RandomOverSampler
+
+
 ########################################################################################################################
 # FUNCTIONS ############################################################################################################
 ########################################################################################################################
@@ -69,6 +72,18 @@ def prepare_training_and_test_data(X, X_addl, use_X_addl, num_days_performance, 
     # Note that this splitting is inclusive of the first index and exclusive of the second index
     X_train = X[0:train_end_ind]
     y_train = y[0:train_end_ind]
+
+    # Oversample the minority class
+    rs = RandomOverSampler(sampling_strategy=1, random_state=7)
+    X_train, y_train = rs.fit_resample(X_train, y_train)
+
+    # Re-sort so we don't lose the time series ordering
+    X_train['temp'] = rs.sample_indices_
+    X_train = X_train.sort_values(by=['temp'])
+    X_train = X_train.drop(['temp'], axis=1)
+
+    sort_inds = np.argsort(rs.sample_indices_)
+    y_train = y_train[sort_inds]
 
     X_test = X[train_end_ind:test_end_ind]
     y_test = y[train_end_ind:test_end_ind]

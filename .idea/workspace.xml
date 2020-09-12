@@ -109,49 +109,53 @@
       <screen x="0" y="0" width="1504" height="963" />
     </state>
     <state x="208" y="138" width="1089" height="705" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1504.963/-608.-1440.3440.1400@0.0.1504.963" timestamp="1595184086139" />
+    <state width="1502" height="440" key="DebuggerActiveHint" timestamp="1599951209276">
+      <screen x="0" y="0" width="1504" height="963" />
+    </state>
+    <state width="1502" height="440" key="DebuggerActiveHint/0.0.1504.963/-608.-1440.3440.1400@0.0.1504.963" timestamp="1599951209276" />
     <state x="533" y="247" key="FileChooserDialogImpl" timestamp="1595184066081">
       <screen x="0" y="0" width="1504" height="963" />
     </state>
     <state x="533" y="247" key="FileChooserDialogImpl/0.0.1504.963/-608.-1440.3440.1400@0.0.1504.963" timestamp="1595184066081" />
-    <state width="1483" height="285" key="GridCell.Tab.0.bottom" timestamp="1599931383272">
+    <state width="1483" height="253" key="GridCell.Tab.0.bottom" timestamp="1599953249621">
       <screen x="0" y="0" width="1504" height="963" />
     </state>
-    <state width="1483" height="285" key="GridCell.Tab.0.bottom/0.0.1504.963/-608.-1440.3440.1400@0.0.1504.963" timestamp="1599931383272" />
+    <state width="1483" height="253" key="GridCell.Tab.0.bottom/0.0.1504.963/-608.-1440.3440.1400@0.0.1504.963" timestamp="1599953249621" />
     <state width="1468" height="340" key="GridCell.Tab.0.bottom/0.0.1504.963@0.0.1504.963" timestamp="1598815431351" />
-    <state width="1483" height="285" key="GridCell.Tab.0.center" timestamp="1599931383271">
+    <state width="1483" height="253" key="GridCell.Tab.0.center" timestamp="1599953249621">
       <screen x="0" y="0" width="1504" height="963" />
     </state>
-    <state width="1483" height="285" key="GridCell.Tab.0.center/0.0.1504.963/-608.-1440.3440.1400@0.0.1504.963" timestamp="1599931383271" />
+    <state width="1483" height="253" key="GridCell.Tab.0.center/0.0.1504.963/-608.-1440.3440.1400@0.0.1504.963" timestamp="1599953249621" />
     <state width="1468" height="340" key="GridCell.Tab.0.center/0.0.1504.963@0.0.1504.963" timestamp="1598815431350" />
-    <state width="1483" height="285" key="GridCell.Tab.0.left" timestamp="1599931383271">
+    <state width="1483" height="253" key="GridCell.Tab.0.left" timestamp="1599953249621">
       <screen x="0" y="0" width="1504" height="963" />
     </state>
-    <state width="1483" height="285" key="GridCell.Tab.0.left/0.0.1504.963/-608.-1440.3440.1400@0.0.1504.963" timestamp="1599931383271" />
+    <state width="1483" height="253" key="GridCell.Tab.0.left/0.0.1504.963/-608.-1440.3440.1400@0.0.1504.963" timestamp="1599953249621" />
     <state width="1468" height="340" key="GridCell.Tab.0.left/0.0.1504.963@0.0.1504.963" timestamp="1598815431349" />
-    <state width="1483" height="285" key="GridCell.Tab.0.right" timestamp="1599931383272">
+    <state width="1483" height="253" key="GridCell.Tab.0.right" timestamp="1599953249621">
       <screen x="0" y="0" width="1504" height="963" />
     </state>
-    <state width="1483" height="285" key="GridCell.Tab.0.right/0.0.1504.963/-608.-1440.3440.1400@0.0.1504.963" timestamp="1599931383272" />
+    <state width="1483" height="253" key="GridCell.Tab.0.right/0.0.1504.963/-608.-1440.3440.1400@0.0.1504.963" timestamp="1599953249621" />
     <state width="1468" height="340" key="GridCell.Tab.0.right/0.0.1504.963@0.0.1504.963" timestamp="1598815431350" />
-    <state width="1483" height="285" key="GridCell.Tab.1.bottom" timestamp="1599931383195">
+    <state width="1483" height="253" key="GridCell.Tab.1.bottom" timestamp="1599953249539">
       <screen x="0" y="0" width="1504" height="963" />
     </state>
-    <state width="1483" height="285" key="GridCell.Tab.1.bottom/0.0.1504.963/-608.-1440.3440.1400@0.0.1504.963" timestamp="1599931383195" />
+    <state width="1483" height="253" key="GridCell.Tab.1.bottom/0.0.1504.963/-608.-1440.3440.1400@0.0.1504.963" timestamp="1599953249539" />
     <state width="1468" height="340" key="GridCell.Tab.1.bottom/0.0.1504.963@0.0.1504.963" timestamp="1598815431079" />
-    <state width="1483" height="285" key="GridCell.Tab.1.center" timestamp="1599931383195">
+    <state width="1483" height="253" key="GridCell.Tab.1.center" timestamp="1599953249539">
       <screen x="0" y="0" width="1504" height="963" />
     </state>
-    <state width="1483" height="285" key="GridCell.Tab.1.center/0.0.1504.963/-608.-1440.3440.1400@0.0.1504.963" timestamp="1599931383195" />
+    <state width="1483" height="253" key="GridCell.Tab.1.center/0.0.1504.963/-608.-1440.3440.1400@0.0.1504.963" timestamp="1599953249539" />
     <state width="1468" height="340" key="GridCell.Tab.1.center/0.0.1504.963@0.0.1504.963" timestamp="1598815431078" />
-    <state width="1483" height="285" key="GridCell.Tab.1.left" timestamp="1599931383194">
+    <state width="1483" height="253" key="GridCell.Tab.1.left" timestamp="1599953249539">
       <screen x="0" y="0" width="1504" height="963" />
     </state>
-    <state width="1483" height="285" key="GridCell.Tab.1.left/0.0.1504.963/-608.-1440.3440.1400@0.0.1504.963" timestamp="1599931383194" />
+    <state width="1483" height="253" key="GridCell.Tab.1.left/0.0.1504.963/-608.-1440.3440.1400@0.0.1504.963" timestamp="1599953249539" />
     <state width="1468" height="340" key="GridCell.Tab.1.left/0.0.1504.963@0.0.1504.963" timestamp="1598815431077" />
-    <state width="1483" height="285" key="GridCell.Tab.1.right" timestamp="1599931383195">
+    <state width="1483" height="253" key="GridCell.Tab.1.right" timestamp="1599953249539">
       <screen x="0" y="0" width="1504" height="963" />
     </state>
-    <state width="1483" height="285" key="GridCell.Tab.1.right/0.0.1504.963/-608.-1440.3440.1400@0.0.1504.963" timestamp="1599931383195" />
+    <state width="1483" height="253" key="GridCell.Tab.1.right/0.0.1504.963/-608.-1440.3440.1400@0.0.1504.963" timestamp="1599953249539" />
     <state width="1468" height="340" key="GridCell.Tab.1.right/0.0.1504.963@0.0.1504.963" timestamp="1598815431079" />
     <state x="152" y="116" key="SettingsEditor" timestamp="1595192430338">
       <screen x="0" y="0" width="1504" height="963" />
@@ -178,8 +182,9 @@
     </breakpoint-manager>
     <watches-manager>
       <configuration name="PythonConfigurationType">
-        <watch expression="__name__" language="Python" />
-        <watch expression="X['CouponRate_&lt;=2.45']" language="Python" />
+        <watch expression="X_train[13:14]" language="Python" />
+        <watch expression="X_train[11:12]" language="Python" />
+        <watch expression="y_train" language="Python" />
       </configuration>
     </watches-manager>
   </component>

@@ -8,6 +8,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
 from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import GaussianNB
+from sklearn.neighbors import KNeighborsClassifier
 
 
 ########################################################################################################################
@@ -238,3 +239,63 @@ def run_naive_bayes(X, X_addl, use_X_addl, num_days_performance, lower_threshold
 
     model_helpers.show_model_stats(nb_clf, X_train_optimal_features, y_train, X_test_optimal_features, y_test, labels,
                                    "naive-bayes-optimal-features")
+
+
+# Optimizes and runs the KNN models.
+def run_knn(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_threshold, train_size, test_size):
+    # Prepare the data
+    X_train, y_train, X_test, y_test, labels = model_helpers.prepare_training_and_test_data(X, X_addl, use_X_addl,
+                                                                                            num_days_performance,
+                                                                                            lower_threshold,
+                                                                                            upper_threshold, train_size,
+                                                                                            test_size)
+
+    # Run the model
+    knn_clf = KNeighborsClassifier(n_neighbors=5)
+    knn_clf.fit(X_train, y_train)
+
+    model_helpers.show_model_stats(knn_clf, X_train, y_train, X_test, y_test, labels, 'knn')
+
+    # Do variance threshold feature selection
+    support = model_helpers.do_variance_threshold_feature_selection(X_train, y_train, 1.0)
+    print('The optimal features are: ')
+    print(X_train.columns[support])
+
+    # Get the optimal set of features
+    X_train_optimal_features = X_train.loc[:, support]
+    X_test_optimal_features = X_test.loc[:, support]
+
+    print('Shape after only including the optimal features:')
+    print('X train: {}'.format(X_train_optimal_features.shape))
+    print()
+
+    # Run the KNN again on the optimal set of features
+    knn_clf = KNeighborsClassifier(n_neighbors=5)
+    knn_clf.fit(X_train_optimal_features, y_train)
+
+    model_helpers.show_model_stats(knn_clf, X_train_optimal_features, y_train, X_test_optimal_features, y_test, labels,
+                                   "knn_clf-optimal-features")
+
+    # Do hyperparameter grid search
+    knn_hyperparams = {
+        'n_neighbors': [1, 2, 5, 10, 15, 20, 30, 40, 50]
+    }
+
+    knn_clf = KNeighborsClassifier(n_neighbors=5)
+
+    initial_train_size = 500
+    val_size = 100
+    cv_splits = model_helpers.get_cv_splits(X_train, initial_train_size, val_size)
+
+    results = model_helpers.do_hyperparameter_grid_search(knn_clf, knn_hyperparams, X_train_optimal_features, y_train,
+                                                          cv_splits, 'accuracy', 'knn')
+
+    print('The results of the KNN hyperparameter grid search are as follows:')
+    print(results)
+
+    # Run the KNN again on the optimal set of hyperparameters
+    knn_clf = KNeighborsClassifier(n_neighbors=40)
+    knn_clf.fit(X_train_optimal_features, y_train)
+
+    model_helpers.show_model_stats(knn_clf, X_train_optimal_features, y_train, X_test_optimal_features, y_test, labels,
+                                   "knn-optimal-hyperparameters")

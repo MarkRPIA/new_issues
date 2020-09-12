@@ -100,6 +100,9 @@ if __name__ == '__main__':
 
     # Naive Bayes
     print('Naive Bayes:\n')
-    models.run_naive_bayes(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_threshold,
-                           train_size, test_size)
+    #models.run_naive_bayes(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_threshold,
+    #                       train_size, test_size)
 
+    # KNN
+    print('KNN:\n')
+    models.run_knn(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_threshold, train_size, test_size)

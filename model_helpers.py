@@ -114,13 +114,21 @@ def prepare_training_and_test_data(X, X_addl, use_X_addl, num_days_performance, 
     X_train = X[0:train_end_ind]
     y_train = y[0:train_end_ind]
 
-    # Oversample the minority class
+    # Oversample the minority classes
     rs = RandomOverSampler(sampling_strategy=1, random_state=7)
     X_train, y_train = rs.fit_resample(X_train, y_train)
 
+    # Re-sort so we don't lose the time series ordering
+    X_train['temp'] = rs.sample_indices_
+    X_train = X_train.sort_values(by=['temp'])
+    X_train = X_train.drop(['temp'], axis=1)
+
+    sort_inds = np.argsort(rs.sample_indices_)
+    y_train = y_train[sort_inds]
+
     X_test = X[train_end_ind:test_end_ind]
     y_test = y[train_end_ind:test_end_ind]
-
+    
     return X_train, y_train, X_test, y_test, le.classes_
 
 

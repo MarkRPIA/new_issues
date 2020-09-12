@@ -37,7 +37,7 @@ def run_random_forest(X, X_addl, use_X_addl, num_days_performance, lower_thresho
     val_size = 100
 
     cv_splits = model_helpers.get_cv_splits(X_train, initial_train_size, val_size)
-    rf_rfecv = model_helpers.do_recursive_feature_elimination(rf_clf, X_train, y_train, cv_splits, 'roc_auc_ovo',
+    rf_rfecv = model_helpers.do_recursive_feature_elimination(rf_clf, X_train, y_train, cv_splits, 'roc_auc',
                                                               'random-forest-categorized')
 
     # Get the optimal set of features
@@ -68,7 +68,7 @@ def run_random_forest(X, X_addl, use_X_addl, num_days_performance, lower_thresho
 
     cv_splits = model_helpers.get_cv_splits(X_train, initial_train_size, val_size)
     results = model_helpers.do_hyperparameter_grid_search(rf_clf, rf_hyperparams, X_train_optimal_features, y_train,
-                                                          cv_splits, 'roc_auc_ovo', 'random-forest-categorized')
+                                                          cv_splits, 'roc_auc', 'random-forest-categorized')
 
     print('The results of the random forest hyperparameter grid search are as follows:')
     print(results)
@@ -130,7 +130,7 @@ def run_svm(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_
     cv_splits = model_helpers.get_cv_splits(X_train, initial_train_size, val_size)
 
     results = model_helpers.do_hyperparameter_grid_search(svm_clf, svm_hyperparams, X_train_optimal_features, y_train,
-                                                          cv_splits, 'accuracy', 'svm-categorized')
+                                                          cv_splits, 'roc_auc', 'svm-categorized')
 
     print('The results of the SVM hyperparameter grid search are as follows:')
     print(results)
@@ -181,7 +181,7 @@ def run_logistic_regression(X, X_addl, use_X_addl, num_days_performance, lower_t
 
     # Do hyperparameter grid search
     lr_hyperparams = {
-        'C': [0.001, 0.01, 0.10, 0.50, 1.0, 10.0]
+        'C': [0.0001, 0.001, 0.01, 0.10, 0.50, 1.0, 10.0]
     }
 
     lr_clf = LogisticRegression(penalty='l2', C=0.07, class_weight='balanced', max_iter=10000, random_state=7)
@@ -191,13 +191,13 @@ def run_logistic_regression(X, X_addl, use_X_addl, num_days_performance, lower_t
     cv_splits = model_helpers.get_cv_splits(X_train, initial_train_size, val_size)
 
     results = model_helpers.do_hyperparameter_grid_search(lr_clf, lr_hyperparams, X_train_optimal_features, y_train,
-                                                          cv_splits, 'accuracy', 'logistic-regression-categorized')
+                                                          cv_splits, 'roc_auc', 'logistic-regression-categorized')
 
     print('The results of the logistic regression hyperparameter grid search are as follows:')
     print(results)
 
     # Run the logistic regression again on the optimal set of hyperparameters
-    lr_clf = LogisticRegression(penalty='l2', C=0.01, class_weight='balanced', max_iter=10000, random_state=7)
+    lr_clf = LogisticRegression(penalty='l2', C=1.0, class_weight='balanced', max_iter=10000, random_state=7)
     lr_clf.fit(X_train_optimal_features, y_train)
 
     model_helpers.show_model_stats(lr_clf, X_train_optimal_features, y_train, X_test_optimal_features, y_test, labels,
@@ -288,7 +288,7 @@ def run_knn(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_
     cv_splits = model_helpers.get_cv_splits(X_train, initial_train_size, val_size)
 
     results = model_helpers.do_hyperparameter_grid_search(knn_clf, knn_hyperparams, X_train_optimal_features, y_train,
-                                                          cv_splits, 'accuracy', 'knn-categorized')
+                                                          cv_splits, 'roc_auc', 'knn-categorized')
 
     print('The results of the KNN hyperparameter grid search are as follows:')
     print(results)

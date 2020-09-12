@@ -885,3 +885,130 @@ def create_X_addl(X, df, verbose):
         print()
 
     return X_addl, df
+
+
+# Helper function to categorize the given numerical column based on the desired categories.
+# If "categories" is a list of length n, it creates n+1 categories. For example, if "categories" is [-10, 0, 10], it
+# would create categories corresponding to (-inf, -10], (-10, 0], (0, 10], (10, inf). If "categories" is a number n>=2,
+# it creates n equally sized buckets as categories.
+def categorize_numerical_col(X, col_name, categories):
+    if not (isinstance(categories, list)):
+        categories_num = categories
+
+        categories = []
+        for i in range(categories_num - 1):
+            categories.append(X[col_name].quantile((i + 1) / categories_num))
+
+    vec = X[col_name].copy()
+    X[col_name] = np.nan
+
+    # First bucket
+    partial_col = vec.mask(vec <= categories[0], '<={}'.format(categories[0]))
+    X[col_name][vec <= categories[0]] = partial_col
+
+    # Middle buckets
+    if len(categories) > 1:
+        for i in range(len(categories) - 1):
+            inds = (vec > categories[i]) & (vec <= categories[i + 1])
+            category = '{}<x<={}'.format(categories[i], categories[i + 1])
+
+            partial_col = vec.mask(inds, category)
+            X[col_name][inds] = partial_col
+
+    # Last bucket
+    partial_col = vec.mask(vec > categories[-1], '>{}'.format(categories[-1]))
+    X[col_name][vec > categories[-1]] = partial_col
+
+    return X
+
+
+# Categorizes numerical columns of X.
+# Note that I chose the categories below based on my domain expertise. For example, I chose to use [15, 30, 45] for the
+# categories of VIX since <= 15 represents a low VIX, 15 to 30 is medium, 30 to 45 is high, and above 45 is very high.
+def categorize_numerical_cols(X):
+    # Categorize the numerical columns
+    X = categorize_numerical_col(X, 'CouponRate', 3)
+    X = categorize_numerical_col(X, 'IptSpread', 4)
+    X = categorize_numerical_col(X, 'Guidance', 4)
+    X = categorize_numerical_col(X, 'Area', 3)
+    X = categorize_numerical_col(X, 'Concession', 4)
+    X = categorize_numerical_col(X, 'NumBookrunners', 2)
+    X = categorize_numerical_col(X, 'NumActiveBookrunners', 2)
+    X = categorize_numerical_col(X, 'NumPassiveBookrunners', 2)
+    X = categorize_numerical_col(X, 'ParAmt', 2)
+    X = categorize_numerical_col(X, 'Vix', [15, 30, 45])
+    X = categorize_numerical_col(X, 'Vix5d', [-10, 0, 10])
+    X = categorize_numerical_col(X, 'Srvix', 3)
+    X = categorize_numerical_col(X, 'Srvix5d', [-10, 0, 10])
+    X = categorize_numerical_col(X, 'CdxIg', [50, 70, 100])
+    X = categorize_numerical_col(X, 'CdxIg5d', [-10, 0, 10])
+    X = categorize_numerical_col(X, 'Usgg2y', 3)
+    X = categorize_numerical_col(X, 'Usgg2y5d', [-10, 0, 10])
+    X = categorize_numerical_col(X, 'Usgg3y', 3)
+    X = categorize_numerical_col(X, 'Usgg3y5d', [-10, 0, 10])
+    X = categorize_numerical_col(X, 'Usgg5y', 3)
+    X = categorize_numerical_col(X, 'Usgg5y5d', [-10, 0, 10])
+    X = categorize_numerical_col(X, 'Usgg10y', 3)
+    X = categorize_numerical_col(X, 'Usgg10y5d', [-10, 0, 10])
+    X = categorize_numerical_col(X, 'Usgg30y', 3)
+    X = categorize_numerical_col(X, 'Usgg30y5d', [-10, 0, 10])
+    X = categorize_numerical_col(X, 'EnterpriseValue', 3)
+    X = categorize_numerical_col(X, 'YearsToCall', [2, 4, 6, 9, 15])
+    X = categorize_numerical_col(X, 'YearsToMaturity', [2, 4, 6, 9, 15])
+    X = categorize_numerical_col(X, 'AvgRating', 4)
+    X = categorize_numerical_col(X, 'OrderbookSize', 3)
+    X = categorize_numerical_col(X, 'IptToGuidance', 3)
+    X = categorize_numerical_col(X, 'HistSectorPerformance', [-10, 0, 10])
+    X = categorize_numerical_col(X, 'HistDealerPerformance', [-10, 0, 10])
+    X = categorize_numerical_col(X, 'HistSeniorityPerformance', [-10, 0, 10])
+    X = categorize_numerical_col(X, 'HistRatingPerformance', [-10, 0, 10])
+    X = categorize_numerical_col(X, 'HistTenorPerformance', [-10, 0, 10])
+    X = categorize_numerical_col(X, 'HistAllPerformance', [-10, 0, 10])
+
+    # One-hot encode the numerical columns we just categorized
+    categorical_cols = ['CouponRate',
+                        'IptSpread',
+                        'Guidance',
+                        'Area',
+                        'Concession',
+                        'NumBookrunners',
+                        'NumActiveBookrunners',
+                        'NumPassiveBookrunners',
+                        'ParAmt',
+                        'Vix',
+                        'Vix5d',
+                        'Srvix',
+                        'Srvix5d',
+                        'CdxIg',
+                        'CdxIg5d',
+                        'Usgg2y',
+                        'Usgg2y5d',
+                        'Usgg3y',
+                        'Usgg3y5d',
+                        'Usgg5y',
+                        'Usgg5y5d',
+                        'Usgg10y',
+                        'Usgg10y5d',
+                        'Usgg30y',
+                        'Usgg30y5d',
+                        'EnterpriseValue',
+                        'YearsToCall',
+                        'YearsToMaturity',
+                        'AvgRating',
+                        'OrderbookSize',
+                        'IptToGuidance',
+                        'HistSectorPerformance',
+                        'HistDealerPerformance',
+                        'HistSeniorityPerformance',
+                        'HistRatingPerformance',
+                        'HistTenorPerformance',
+                        'HistAllPerformance']
+    X_ohe = pd.get_dummies(X[categorical_cols], drop_first=True)
+
+    # Add to the DataFrame
+    X = pd.concat([X, X_ohe], axis=1)
+
+    # Drop the columns from X
+    X = X.drop(categorical_cols, axis=1)
+
+    return X

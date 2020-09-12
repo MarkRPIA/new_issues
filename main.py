@@ -78,6 +78,9 @@ if __name__ == '__main__':
     # Add the engineered columns
     X = feature_engineering.add_similarity_cols(X, field, verbose)
 
+    # Categorize numerical columns
+    X = preprocessing.categorize_numerical_cols(X)
+
     # Profile the data (again)
     # if verbose:
     #    profile_data(X, 'new_issues_after_preprocessing.html')

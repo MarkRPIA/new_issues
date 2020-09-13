@@ -274,7 +274,7 @@ def run_knn(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_
     knn_clf.fit(X_train_optimal_features, y_train)
 
     model_helpers.show_model_stats(knn_clf, X_train_optimal_features, y_train, X_test_optimal_features, y_test, labels,
-                                   "knn_clf-optimal-features")
+                                   "knn-optimal-features")
 
     # Do hyperparameter grid search
     knn_hyperparams = {
@@ -294,7 +294,7 @@ def run_knn(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_
     print(results)
 
     # Run the KNN again on the optimal set of hyperparameters
-    knn_clf = KNeighborsClassifier(n_neighbors=20)
+    knn_clf = KNeighborsClassifier(n_neighbors=15)
     knn_clf.fit(X_train_optimal_features, y_train)
 
     model_helpers.show_model_stats(knn_clf, X_train_optimal_features, y_train, X_test_optimal_features, y_test, labels,

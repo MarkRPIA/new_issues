@@ -85,9 +85,9 @@ if __name__ == '__main__':
     # MODELS:
 
     # Random forest
-    #print('Random forest:\n')
-    #models.run_random_forest(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_threshold, train_size,
-    #                         test_size)
+    print('Random forest:\n')
+    models.run_random_forest(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_threshold, train_size,
+                             test_size)
 
     # SVM
     #print('SVM:\n')
@@ -104,5 +104,5 @@ if __name__ == '__main__':
     #                       train_size, test_size)
 
     # KNN
-    print('KNN:\n')
-    models.run_knn(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_threshold, train_size, test_size)
+    #print('KNN:\n')
+    #models.run_knn(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_threshold, train_size, test_size)

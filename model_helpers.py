@@ -128,7 +128,7 @@ def prepare_training_and_test_data(X, X_addl, use_X_addl, num_days_performance, 
 
     X_test = X[train_end_ind:test_end_ind]
     y_test = y[train_end_ind:test_end_ind]
-    
+
     return X_train, y_train, X_test, y_test, le.classes_
 
 

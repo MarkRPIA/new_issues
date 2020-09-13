@@ -33,8 +33,8 @@ def run_random_forest(X, X_addl, use_X_addl, num_days_performance, lower_thresho
     model_helpers.show_model_stats(rf_clf, X_train, y_train, X_test, y_test, labels, "random-forest")
 
     # Do recursive feature elimination
-    initial_train_size = 500
-    val_size = 100
+    initial_train_size = 700
+    val_size = 200
 
     cv_splits = model_helpers.get_cv_splits(X_train, initial_train_size, val_size)
     rf_rfecv = model_helpers.do_recursive_feature_elimination(rf_clf, X_train, y_train, cv_splits, 'roc_auc',
@@ -74,8 +74,8 @@ def run_random_forest(X, X_addl, use_X_addl, num_days_performance, lower_thresho
     print(results)
 
     # Run the Random Forest again on the optimal set of hyperparameters
-    rf_clf = RandomForestClassifier(criterion='entropy', max_depth=30, max_features='sqrt', max_leaf_nodes=25,
-                                    n_estimators=10, bootstrap=True, random_state=7)
+    rf_clf = RandomForestClassifier(criterion='entropy', max_depth=50, max_features=None, max_leaf_nodes=200,
+                                    n_estimators=50, bootstrap=True, random_state=7)
     rf_clf.fit(X_train_optimal_features, y_train)
 
     model_helpers.show_model_stats(rf_clf, X_train_optimal_features, y_train, X_test_optimal_features, y_test, labels,
@@ -125,8 +125,8 @@ def run_svm(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_
 
     svm_clf = SVC(kernel='poly', C=10.0, random_state=7)
 
-    initial_train_size = 500
-    val_size = 100
+    initial_train_size = 700
+    val_size = 200
     cv_splits = model_helpers.get_cv_splits(X_train, initial_train_size, val_size)
 
     results = model_helpers.do_hyperparameter_grid_search(svm_clf, svm_hyperparams, X_train_optimal_features, y_train,
@@ -186,8 +186,8 @@ def run_logistic_regression(X, X_addl, use_X_addl, num_days_performance, lower_t
 
     lr_clf = LogisticRegression(penalty='l2', C=0.07, class_weight='balanced', max_iter=10000, random_state=7)
 
-    initial_train_size = 500
-    val_size = 100
+    initial_train_size = 700
+    val_size = 200
     cv_splits = model_helpers.get_cv_splits(X_train, initial_train_size, val_size)
 
     results = model_helpers.do_hyperparameter_grid_search(lr_clf, lr_hyperparams, X_train_optimal_features, y_train,
@@ -283,8 +283,8 @@ def run_knn(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_
 
     knn_clf = KNeighborsClassifier(n_neighbors=5)
 
-    initial_train_size = 500
-    val_size = 100
+    initial_train_size = 700
+    val_size = 200
     cv_splits = model_helpers.get_cv_splits(X_train, initial_train_size, val_size)
 
     results = model_helpers.do_hyperparameter_grid_search(knn_clf, knn_hyperparams, X_train_optimal_features, y_train,

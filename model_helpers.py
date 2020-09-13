@@ -2,22 +2,24 @@
 # IMPORTS ##############################################################################################################
 ########################################################################################################################
 
+import linear_regression_helpers
+
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 
+import statsmodels.api as sm
+
 from sklearn.preprocessing import StandardScaler
-from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import r2_score
 from sklearn.metrics import plot_confusion_matrix
 from sklearn.metrics import classification_report
-from sklearn.feature_selection import RFECV
 from sklearn.feature_selection import VarianceThreshold
 from sklearn.model_selection import GridSearchCV
 
 from yellowbrick.classifier import ClassPredictionError
 from yellowbrick.classifier import ROCAUC
 
-from imblearn.over_sampling import RandomOverSampler
 
 ########################################################################################################################
 # FUNCTIONS ############################################################################################################
@@ -25,21 +27,20 @@ from imblearn.over_sampling import RandomOverSampler
 
 
 # Sets up the training and test data.
-# Note that this splits the target from -inf to lower_threshold, lower_threshold to upper_threshold,
-# and upper_threshold to inf. If lower_threshold == upper_threshold, then it splits the target from -inf
-# to lower_threshold == upper_threshold and lower_threshold == upper_threshold to inf.
-def prepare_training_and_test_data(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_threshold,
-                                   train_size, test_size):
+def prepare_training_and_test_data(X, X_addl, use_X_addl, train_size, test_size):
     # Add the additional columns if requested
     if use_X_addl:
         X = pd.concat([X, X_addl], axis=1)
 
-    # Drop all Performance columns other than the one for the day we care about (this will become the target)
+    # Drop performance columns
     for i in range(11):
-        if i != num_days_performance:
-            X = X.drop(['Performance{}'.format(i)], axis=1)
+        X = X.drop(['Performance{}'.format(i)], axis=1)
 
-    target_col = 'Performance{}'.format(num_days_performance)
+    # Drop rows where there is no Guidance
+    X = X.drop(X[X['Guidance'] == 0].index)
+
+    # Set the target column
+    target_col = 'IssueSpread'
 
     # Drop rows that have no target
     X = X.drop(X[X[target_col] == '#VALUE!'].index)
@@ -50,18 +51,6 @@ def prepare_training_and_test_data(X, X_addl, use_X_addl, num_days_performance, 
     # Get the target
     y = X[target_col]
     X = X.drop([target_col], axis=1)
-
-    # Label encode y (it is a multiclass problem since each sample must belong to exactly one class)
-    if lower_threshold == upper_threshold:
-        y = y.mask(y <= lower_threshold, '<={}'.format(lower_threshold)).mask(y > lower_threshold,
-                                                                              '>{}'.format(lower_threshold))
-    else:
-        y = y.mask(y <= lower_threshold, '<={}'.format(lower_threshold)).mask(
-            (y > lower_threshold) & (y < upper_threshold), '{}<x<{}'.format(lower_threshold, upper_threshold)).mask(
-            y >= upper_threshold, '>={}'.format(upper_threshold))
-
-    le = LabelEncoder()
-    y = le.fit_transform(y)
 
     # Scale (note that I leave binary columns alone)
     standard_scaler_cols = ['NumBs',
@@ -114,22 +103,10 @@ def prepare_training_and_test_data(X, X_addl, use_X_addl, num_days_performance, 
     X_train = X[0:train_end_ind]
     y_train = y[0:train_end_ind]
 
-    # Oversample the minority classes
-    rs = RandomOverSampler(sampling_strategy=1, random_state=7)
-    X_train, y_train = rs.fit_resample(X_train, y_train)
-
-    # Re-sort so we don't lose the time series ordering
-    X_train['temp'] = rs.sample_indices_
-    X_train = X_train.sort_values(by=['temp'])
-    X_train = X_train.drop(['temp'], axis=1)
-
-    sort_inds = np.argsort(rs.sample_indices_)
-    y_train = y_train[sort_inds]
-
     X_test = X[train_end_ind:test_end_ind]
     y_test = y[train_end_ind:test_end_ind]
 
-    return X_train, y_train, X_test, y_test, le.classes_
+    return X_train, y_train, X_test, y_test
 
 
 # Helper function for showing model statistics.
@@ -214,6 +191,47 @@ def show_model_stats(clf, X_train, y_train, X_test, y_test, labels, name):
         fig.savefig('out/feature-importances-{}.png'.format(name), transparent=False)
 
 
+# Shows relevant info for the linear regression model
+def show_linear_regression_info(X_train, y_train, X_test, y_test, lin_reg_results, name):
+    # Train
+    if name is None:
+        data_type = "training-data"
+    else:
+        data_type = "training-data-{}".format(name)
+
+    linear_regression_helpers.test_linearity(lin_reg_results, X_train, y_train, data_type)
+    linear_regression_helpers.test_autocorrelation_of_errors(lin_reg_results, X_train, y_train, data_type)
+    linear_regression_helpers.test_homoscedasticity(lin_reg_results, X_train, y_train, data_type)
+    linear_regression_helpers.test_error_normality(lin_reg_results, X_train, y_train, data_type)
+
+    print()
+    pred_train = lin_reg_results.predict(sm.add_constant(X_train, has_constant='add'))
+    print('R-squared on training data: {}'.format(r2_score(y_train, pred_train)))
+
+    diff_train = pred_train - y_train
+    mae_train = sum(abs(i) for i in diff_train) / len(diff_train)
+    print('MAE on training data: {}'.format(mae_train))
+
+    # Test
+    if name is None:
+        data_type = "test-data"
+    else:
+        data_type = "test-data-{}".format(name)
+
+    linear_regression_helpers.test_linearity(lin_reg_results, X_test, y_test, data_type)
+    linear_regression_helpers.test_autocorrelation_of_errors(lin_reg_results, X_test, y_test, data_type)
+    linear_regression_helpers.test_homoscedasticity(lin_reg_results, X_test, y_test, data_type)
+    linear_regression_helpers.test_error_normality(lin_reg_results, X_test, y_test, data_type)
+
+    print()
+    pred_test = lin_reg_results.predict(sm.add_constant(X_test, has_constant='add'))
+    print('R-squared on test data: {}'.format(r2_score(y_test, pred_test)))
+
+    diff_test = pred_test - y_test
+    mae_test = sum(abs(i) for i in diff_test) / len(diff_test)
+    print('MAE on test data: {}'.format(mae_test))
+
+
 # Helper function for getting the cross-validation splits in a way that eliminates look-ahead bias.
 def get_cv_splits(X_train, initial_train_size, val_size):
     n = len(X_train)
@@ -224,30 +242,6 @@ def get_cv_splits(X_train, initial_train_size, val_size):
         cv_splits = cv_splits[:-1]
 
     return cv_splits
-
-
-# Helper function to do recursive feature elimination.
-def do_recursive_feature_elimination(clf, X_train, y_train, cv_splits, scoring_fn, name):
-    rfecv = RFECV(estimator=clf, step=1, cv=cv_splits, scoring=scoring_fn, verbose=1)
-    rfecv.fit(X_train, y_train)
-
-    print("Optimal number of features : %d" % rfecv.n_features_)
-    print('\nOptimal columns:')
-    print(X_train.columns[rfecv.get_support()])
-
-    # Plot number of features vs cross-validation scores
-    plt.figure(figsize=(16, 10))
-    plt.grid(True)
-    plt.title('New Issues, {}'.format(name), fontsize=22)
-    plt.xlabel("Number of features", fontsize=22)
-    plt.ylabel("Cross validation score ({})".format(scoring_fn), fontsize=22)
-    plt.plot(range(1, len(rfecv.grid_scores_) + 1), rfecv.grid_scores_)
-    plt.xticks(fontsize=18)
-    plt.yticks(fontsize=18)
-    plt.tight_layout()
-    plt.savefig('out/recursive-feature-elimination-{}.png'.format(name))
-
-    return rfecv
 
 
 # Helper function to do variance threshold feature selection.

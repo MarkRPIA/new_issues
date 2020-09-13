@@ -866,16 +866,10 @@ def create_X_addl(X, df, verbose):
     X_addl['TotalDealSize'] = df['Total Deal Size (USD)']
     X_addl['OverSubscription'] = df['Over Subscription']
 
-    # 'IssueSpread', 'IptToIssueSpread', 'GuidanceToIssueSpread'
-
+    # 'IssueSpread'
     X_addl['IssueSpread'] = df['Spread '].astype(float)
-    X_addl['IptToIssueSpread'] = X_addl['IssueSpread'].subtract(X['IptSpread'])
-    X_addl['IptToIssueSpread'] = X_addl['IptToIssueSpread'].mask(X['IptSpread'] == 0, 0)  # use 0 when 'IptSpread' is 0
-    X_addl['GuidanceToIssueSpread'] = X_addl['IssueSpread'].subtract(X['Guidance'])
-    X_addl['GuidanceToIssueSpread'] = X_addl['GuidanceToIssueSpread'].mask(X['Guidance'] == 0, 0)
 
     # Drop the columns from df
-
     df = df.drop(['Total Deal Size (USD)',
                   'Over Subscription',
                   'Spread '

@@ -4,6 +4,11 @@
 
 import model_helpers
 
+
+import statsmodels.api as sm
+
+
+
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
 from sklearn.linear_model import LogisticRegression
@@ -14,6 +19,79 @@ from sklearn.neighbors import KNeighborsClassifier
 ########################################################################################################################
 # FUNCTIONS ############################################################################################################
 ########################################################################################################################
+
+
+# Optimizes and runs the linear regression models.
+def run_linear_regression(X, X_addl, use_X_addl, train_size, test_size):
+    # Prepare the data
+    X_train, y_train, X_test, y_test = model_helpers.prepare_training_and_test_data(X, X_addl, use_X_addl, train_size,
+                                                                                    test_size)
+
+    # Fit the model on training data
+    lin_reg_model = sm.OLS(y_train, sm.add_constant(X_train, has_constant='add'))
+    lin_reg_results = lin_reg_model.fit()
+
+    # Print the results
+    print(lin_reg_results.summary())
+    print()
+
+    model_helpers.show_linear_regression_info(X_train, y_train, X_test, y_test, lin_reg_results, None)
+
+    # Only keep the statistically significant features
+    cols_to_keep = [
+        'NumBs',
+        'CouponRate',
+        'IptSpread',
+        'Guidance',
+        'Area',
+        'Concession',
+        'NumActiveBookrunners',
+        'HasCouponSteps',
+        'AddOn',
+        'IsYield',
+        'Vix',
+        'Vix5d',
+        'Srvix',
+        'Usgg10y',
+        'CouponType_Fixed to FRN',
+        'CouponType_Floating',
+        'Industry_Gaming',
+        'IsLowTierB&D',
+        'YearsToMaturity',
+        'FitchRating',
+        'Rank',
+        'IptToGuidance',
+        'HistRatingPerformance',
+        'OverSubscription'
+    ]
+
+    X_train = X_train[cols_to_keep]
+    X_test = X_test[cols_to_keep]
+
+    # Fit the model on training data
+    lin_reg_model = sm.OLS(y_train, sm.add_constant(X_train, has_constant='add'))
+    lin_reg_results = lin_reg_model.fit()
+
+    # Print the results
+    print(lin_reg_results.summary())
+    print()
+
+    model_helpers.show_linear_regression_info(X_train, y_train, X_test, y_test, lin_reg_results, "optimal-features")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # Optimizes and runs the random forest models.

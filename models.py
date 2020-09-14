@@ -4,16 +4,9 @@
 
 import model_helpers
 
+import numpy as np
 
 import statsmodels.api as sm
-
-
-
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.svm import SVC
-from sklearn.linear_model import LogisticRegression
-from sklearn.naive_bayes import GaussianNB
-from sklearn.neighbors import KNeighborsClassifier
 
 
 ########################################################################################################################
@@ -35,7 +28,7 @@ def run_linear_regression(X, X_addl, use_X_addl, train_size, test_size):
     print(lin_reg_results.summary())
     print()
 
-    model_helpers.show_linear_regression_info(X_train, y_train, X_test, y_test, lin_reg_results, None)
+    model_helpers.show_linear_regression_stats(lin_reg_results, X_train, y_train, X_test, y_test, None)
 
     # Only keep the statistically significant features
     cols_to_keep = [
@@ -76,107 +69,24 @@ def run_linear_regression(X, X_addl, use_X_addl, train_size, test_size):
     print(lin_reg_results.summary())
     print()
 
-    model_helpers.show_linear_regression_info(X_train, y_train, X_test, y_test, lin_reg_results, "optimal-features")
+    model_helpers.show_linear_regression_stats(lin_reg_results, X_train, y_train, X_test, y_test, "optimal-features")
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Optimizes and runs the random forest models.
-def run_random_forest(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_threshold, train_size,
-                      test_size):
+# Optimizes and runs the ridge / lasso regression models.
+def run_ridge_lasso_regression(X, X_addl, use_X_addl, train_size, test_size):
     # Prepare the data
-    X_train, y_train, X_test, y_test, labels = model_helpers.prepare_training_and_test_data(X, X_addl, use_X_addl,
-                                                                                            num_days_performance,
-                                                                                            lower_threshold,
-                                                                                            upper_threshold, train_size,
-                                                                                            test_size)
+    X_train, y_train, X_test, y_test = model_helpers.prepare_training_and_test_data(X, X_addl, use_X_addl, train_size,
+                                                                                    test_size)
 
-    # Run the model
-    rf_clf = RandomForestClassifier(n_estimators=100, max_features='auto', max_depth=20, bootstrap=True, random_state=7)
-    rf_clf.fit(X_train, y_train)
+    # Fit the model on training data
+    ridge_lasso_rg_model = sm.OLS(y_train, sm.add_constant(X_train, has_constant='add'))
+    ridge_lasso_rg = ridge_lasso_rg_model.fit_regularized(alpha=0.1)
 
-    model_helpers.show_model_stats(rf_clf, X_train, y_train, X_test, y_test, labels, "random-forest")
+    model_helpers.show_model_stats(ridge_lasso_rg, sm.add_constant(X_train, has_constant='add'), y_train,
+                                   sm.add_constant(X_test, has_constant='add'), y_test, 'ridge-lasso')
 
-    # Do recursive feature elimination
-    initial_train_size = 700
-    val_size = 200
-
-    cv_splits = model_helpers.get_cv_splits(X_train, initial_train_size, val_size)
-    rf_rfecv = model_helpers.do_recursive_feature_elimination(rf_clf, X_train, y_train, cv_splits, 'roc_auc',
-                                                              'random-forest')
-
-    # Get the optimal set of features
-    X_train_optimal_features = X_train[X_train.columns[rf_rfecv.get_support()]]
-    X_test_optimal_features = X_test[X_train.columns[rf_rfecv.get_support()]]
-
-    print('Shape after only including the optimal features:')
-    print('X train: {}'.format(X_train_optimal_features.shape))
-    print()
-
-    # Run the Random Forest again on the optimal set of features
-    rf_clf = RandomForestClassifier(n_estimators=100, max_features='auto', max_depth=20, bootstrap=True, random_state=7)
-    rf_clf.fit(X_train_optimal_features, y_train)
-
-    model_helpers.show_model_stats(rf_clf, X_train_optimal_features, y_train, X_test_optimal_features, y_test, labels,
-                                   "random-forest-optimal-features")
-
-    # Do hyperparameter grid search
-    rf_hyperparams = {
-        'n_estimators': [10, 25, 50, 100],  # number of trees in the forest
-        'max_features': (None, 'sqrt', 'log2'),
-        'max_depth': [5, 10, 20, 30, 40, 50],  # the maximum depth of a tree
-        'criterion': ('gini', 'entropy'),  # function to measure the quality of a split
-        'max_leaf_nodes': [None, 25, 50, 100, 200]
-    }
-
-    rf_clf = RandomForestClassifier(n_estimators=100, max_features='auto', max_depth=20, bootstrap=True, random_state=7)
-
-    cv_splits = model_helpers.get_cv_splits(X_train, initial_train_size, val_size)
-    results = model_helpers.do_hyperparameter_grid_search(rf_clf, rf_hyperparams, X_train_optimal_features, y_train,
-                                                          cv_splits, 'roc_auc', 'random-forest')
-
-    print('The results of the random forest hyperparameter grid search are as follows:')
-    print(results)
-
-    # Run the Random Forest again on the optimal set of hyperparameters
-    rf_clf = RandomForestClassifier(criterion='entropy', max_depth=50, max_features=None, max_leaf_nodes=200,
-                                    n_estimators=50, bootstrap=True, random_state=7)
-    rf_clf.fit(X_train_optimal_features, y_train)
-
-    model_helpers.show_model_stats(rf_clf, X_train_optimal_features, y_train, X_test_optimal_features, y_test, labels,
-                                   "random-forest-optimal-hyperparameters")
-
-
-# Optimizes and runs the SVM models.
-def run_svm(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_threshold, train_size, test_size):
-    # Prepare the data
-    X_train, y_train, X_test, y_test, labels = model_helpers.prepare_training_and_test_data(X, X_addl, use_X_addl,
-                                                                                            num_days_performance,
-                                                                                            lower_threshold,
-                                                                                            upper_threshold, train_size,
-                                                                                            test_size)
-
-    # Run the model
-    svm_clf = SVC(kernel='poly', C=10.0, random_state=7)  # linear, poly, rbf, sigmoid
-    svm_clf.fit(X_train, y_train)
-
-    model_helpers.show_model_stats(svm_clf, X_train, y_train, X_test, y_test, labels, 'svm')
-
-    # Do variance threshold feature selection
-    support = model_helpers.do_variance_threshold_feature_selection(X_train, y_train, 1.0)
+    # Do univariate feature selection
+    support = model_helpers.do_univariate_feature_selection(X_train, y_train)
     print('The optimal features are: ')
     print(X_train.columns[support])
 
@@ -188,192 +98,44 @@ def run_svm(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_
     print('X train: {}'.format(X_train_optimal_features.shape))
     print()
 
-    # Run the SVM again on the optimal set of features
-    svm_clf = SVC(kernel='poly', C=10.0, random_state=7)
-    svm_clf.fit(X_train_optimal_features, y_train)
+    # Run the regression again on the optimal set of features
+    ridge_lasso_rg_model = sm.OLS(y_train, sm.add_constant(X_train_optimal_features, has_constant='add'))
+    ridge_lasso_rg = ridge_lasso_rg_model.fit_regularized(alpha=0.1)
 
-    model_helpers.show_model_stats(svm_clf, X_train_optimal_features, y_train, X_test_optimal_features, y_test, labels,
-                                   "svm-optimal-features")
-
-    # Do hyperparameter grid search
-    svm_hyperparams = {
-        'C': [0.001, 0.01, 0.10, 0.50, 1.0, 10.0],
-        'kernel': ['linear', 'poly', 'rbf', 'sigmoid']
-    }
-
-    svm_clf = SVC(kernel='poly', C=10.0, random_state=7)
-
-    initial_train_size = 700
-    val_size = 200
-    cv_splits = model_helpers.get_cv_splits(X_train, initial_train_size, val_size)
-
-    results = model_helpers.do_hyperparameter_grid_search(svm_clf, svm_hyperparams, X_train_optimal_features, y_train,
-                                                          cv_splits, 'roc_auc', 'svm')
-
-    print('The results of the SVM hyperparameter grid search are as follows:')
-    print(results)
-
-    # Run the SVM again on the optimal set of hyperparameters
-    svm_clf = SVC(kernel='linear', C=0.001, random_state=7)
-    svm_clf.fit(X_train_optimal_features, y_train)
-
-    model_helpers.show_model_stats(svm_clf, X_train_optimal_features, y_train, X_test_optimal_features, y_test, labels,
-                                   "svm-optimal-hyperparameters")
-
-
-# Optimizes and runs the logistic regression models.
-def run_logistic_regression(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_threshold, train_size,
-                            test_size):
-    # Prepare the data
-    X_train, y_train, X_test, y_test, labels = model_helpers.prepare_training_and_test_data(X, X_addl, use_X_addl,
-                                                                                            num_days_performance,
-                                                                                            lower_threshold,
-                                                                                            upper_threshold, train_size,
-                                                                                            test_size)
-
-    # Run the model
-    lr_clf = LogisticRegression(penalty='l2', C=0.07, class_weight='balanced', max_iter=10000, random_state=7)
-    lr_clf.fit(X_train, y_train)
-
-    model_helpers.show_model_stats(lr_clf, X_train, y_train, X_test, y_test, labels, 'logistic-regression')
-
-    # Do variance threshold feature selection
-    support = model_helpers.do_variance_threshold_feature_selection(X_train, y_train, 1.0)
-    print('The optimal features are: ')
-    print(X_train.columns[support])
-
-    # Get the optimal set of features
-    X_train_optimal_features = X_train.loc[:, support]
-    X_test_optimal_features = X_test.loc[:, support]
-
-    print('Shape after only including the optimal features:')
-    print('X train: {}'.format(X_train_optimal_features.shape))
-    print()
-
-    # Run the logistic regression again on the optimal set of features
-    lr_clf = LogisticRegression(penalty='l2', C=0.07, class_weight='balanced', max_iter=10000, random_state=7)
-    lr_clf.fit(X_train_optimal_features, y_train)
-
-    model_helpers.show_model_stats(lr_clf, X_train_optimal_features, y_train, X_test_optimal_features, y_test, labels,
-                                   "logistic-regression-optimal-features")
+    model_helpers.show_model_stats(ridge_lasso_rg, sm.add_constant(X_train_optimal_features, has_constant='add'),
+                                   y_train, sm.add_constant(X_test_optimal_features, has_constant='add'), y_test,
+                                   'ridge-lasso-optimal-features')
 
     # Do hyperparameter grid search
-    lr_hyperparams = {
-        'C': [0.001, 0.01, 0.10, 0.50, 1.0, 10.0]
-    }
+    alphas = [0.01, 0.1, 0.25, 0.5, 0.75, 0.9, 0.99]
+    L1_wts = [0, 0.25, 0.5, 0.75, 1]
 
-    lr_clf = LogisticRegression(penalty='l2', C=0.07, class_weight='balanced', max_iter=10000, random_state=7)
+    maes = {}
+    min_mae = np.inf
+    min_mae_alpha = None
+    min_mae_L1_wt = None
+    for alpha in alphas:
+        maes[alpha] = {}
+        for L1_wt in L1_wts:
+            ridge_lasso_rg = ridge_lasso_rg_model.fit_regularized(alpha=alpha, L1_wt=L1_wt)
 
-    initial_train_size = 700
-    val_size = 200
-    cv_splits = model_helpers.get_cv_splits(X_train, initial_train_size, val_size)
+            pred_test = ridge_lasso_rg.predict(sm.add_constant(X_test_optimal_features, has_constant='add'))
+            diff_test = pred_test - y_test
+            mae_test = sum(abs(i) for i in diff_test) / len(diff_test)
+            maes[alpha][L1_wt] = mae_test
 
-    results = model_helpers.do_hyperparameter_grid_search(lr_clf, lr_hyperparams, X_train_optimal_features, y_train,
-                                                          cv_splits, 'roc_auc', 'logistic-regression')
+            if mae_test < min_mae:
+                min_mae = mae_test
+                min_mae_alpha = alpha
+                min_mae_L1_wt = L1_wt
 
-    print('The results of the logistic regression hyperparameter grid search are as follows:')
-    print(results)
+    print('The optimal hyperparameters are alpha = {} and L1_wt = {}.'.format(min_mae_alpha, min_mae_L1_wt))
+    print('They result in an MAE of {}.'.format(min_mae))
 
-    # Run the logistic regression again on the optimal set of hyperparameters
-    lr_clf = LogisticRegression(penalty='l2', C=0.5, class_weight='balanced', max_iter=10000, random_state=7)
-    lr_clf.fit(X_train_optimal_features, y_train)
+    # Run the ridge / lasso regression again on the optimal set of hyperparameters
+    ridge_lasso_rg_model = sm.OLS(y_train, sm.add_constant(X_train_optimal_features, has_constant='add'))
+    ridge_lasso_rg = ridge_lasso_rg_model.fit_regularized(alpha=min_mae_alpha, L1_wt=min_mae_L1_wt)
 
-    model_helpers.show_model_stats(lr_clf, X_train_optimal_features, y_train, X_test_optimal_features, y_test, labels,
-                                   "logistic-regression-optimal-hyperparameters")
-
-
-# Optimizes and runs the naive Bayes models.
-def run_naive_bayes(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_threshold, train_size,
-                    test_size):
-    # Prepare the data
-    X_train, y_train, X_test, y_test, labels = model_helpers.prepare_training_and_test_data(X, X_addl, use_X_addl,
-                                                                                            num_days_performance,
-                                                                                            lower_threshold,
-                                                                                            upper_threshold, train_size,
-                                                                                            test_size)
-
-    # Run the model
-    nb_clf = GaussianNB()
-    nb_clf.fit(X_train, y_train)
-
-    model_helpers.show_model_stats(nb_clf, X_train, y_train, X_test, y_test, labels, 'naive-bayes')
-
-    # Do variance threshold feature selection
-    support = model_helpers.do_variance_threshold_feature_selection(X_train, y_train, 1.0)
-    print('The optimal features are: ')
-    print(X_train.columns[support])
-
-    # Get the optimal set of features
-    X_train_optimal_features = X_train.loc[:, support]
-    X_test_optimal_features = X_test.loc[:, support]
-
-    print('Shape after only including the optimal features:')
-    print('X train: {}'.format(X_train_optimal_features.shape))
-    print()
-
-    # Run the naive Bayes again on the optimal set of features
-    nb_clf = GaussianNB()
-    nb_clf.fit(X_train_optimal_features, y_train)
-
-    model_helpers.show_model_stats(nb_clf, X_train_optimal_features, y_train, X_test_optimal_features, y_test, labels,
-                                   "naive-bayes-optimal-features")
-
-
-# Optimizes and runs the KNN models.
-def run_knn(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_threshold, train_size, test_size):
-    # Prepare the data
-    X_train, y_train, X_test, y_test, labels = model_helpers.prepare_training_and_test_data(X, X_addl, use_X_addl,
-                                                                                            num_days_performance,
-                                                                                            lower_threshold,
-                                                                                            upper_threshold, train_size,
-                                                                                            test_size)
-
-    # Run the model
-    knn_clf = KNeighborsClassifier(n_neighbors=5)
-    knn_clf.fit(X_train, y_train)
-
-    model_helpers.show_model_stats(knn_clf, X_train, y_train, X_test, y_test, labels, 'knn')
-
-    # Do variance threshold feature selection
-    support = model_helpers.do_variance_threshold_feature_selection(X_train, y_train, 1.0)
-    print('The optimal features are: ')
-    print(X_train.columns[support])
-
-    # Get the optimal set of features
-    X_train_optimal_features = X_train.loc[:, support]
-    X_test_optimal_features = X_test.loc[:, support]
-
-    print('Shape after only including the optimal features:')
-    print('X train: {}'.format(X_train_optimal_features.shape))
-    print()
-
-    # Run the KNN again on the optimal set of features
-    knn_clf = KNeighborsClassifier(n_neighbors=5)
-    knn_clf.fit(X_train_optimal_features, y_train)
-
-    model_helpers.show_model_stats(knn_clf, X_train_optimal_features, y_train, X_test_optimal_features, y_test, labels,
-                                   "knn-optimal-features")
-
-    # Do hyperparameter grid search
-    knn_hyperparams = {
-        'n_neighbors': [1, 2, 5, 10, 15, 20, 30, 40, 50]
-    }
-
-    knn_clf = KNeighborsClassifier(n_neighbors=5)
-
-    initial_train_size = 700
-    val_size = 200
-    cv_splits = model_helpers.get_cv_splits(X_train, initial_train_size, val_size)
-
-    results = model_helpers.do_hyperparameter_grid_search(knn_clf, knn_hyperparams, X_train_optimal_features, y_train,
-                                                          cv_splits, 'roc_auc', 'knn')
-
-    print('The results of the KNN hyperparameter grid search are as follows:')
-    print(results)
-
-    # Run the KNN again on the optimal set of hyperparameters
-    knn_clf = KNeighborsClassifier(n_neighbors=15)
-    knn_clf.fit(X_train_optimal_features, y_train)
-
-    model_helpers.show_model_stats(knn_clf, X_train_optimal_features, y_train, X_test_optimal_features, y_test, labels,
-                                   "knn-optimal-hyperparameters")
+    model_helpers.show_model_stats(ridge_lasso_rg, sm.add_constant(X_train_optimal_features, has_constant='add'),
+                                   y_train, sm.add_constant(X_test_optimal_features, has_constant='add'), y_test,
+                                   'ridge-lasso-optimal-hyperparameters')

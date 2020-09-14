@@ -10,15 +10,13 @@ import numpy as np
 
 import statsmodels.api as sm
 
+import seaborn as sns
+
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import r2_score
-from sklearn.metrics import plot_confusion_matrix
-from sklearn.metrics import classification_report
-from sklearn.feature_selection import VarianceThreshold
+from sklearn.feature_selection import SelectPercentile
+from sklearn.feature_selection import mutual_info_regression
 from sklearn.model_selection import GridSearchCV
-
-from yellowbrick.classifier import ClassPredictionError
-from yellowbrick.classifier import ROCAUC
 
 
 ########################################################################################################################
@@ -110,89 +108,49 @@ def prepare_training_and_test_data(X, X_addl, use_X_addl, train_size, test_size)
 
 
 # Helper function for showing model statistics.
-def show_model_stats(clf, X_train, y_train, X_test, y_test, labels, name):
-    i = 0
-    print('In the training data, there are...')
-    for label in labels:
-        print(
-            '{} with performance {} ({:.0f}%)'.format(sum(y_train == i), label, sum(y_train == i) / len(y_train) * 100))
-        i = i + 1
-    print()
+def show_model_stats(rg, X_train, y_train, X_test, y_test, name):
+    # Training data
+    pred_train = rg.predict(X_train)
 
-    i = 0
-    print('In the test data, there are...')
-    for label in labels:
-        print('{} with performance {} ({:.0f}%)'.format(sum(y_test == i), label, sum(y_test == i) / len(y_test) * 100))
-        i = i + 1
-    print()
+    df = pd.DataFrame({'Actual': y_train, 'Predicted': pred_train})
+    sns.lmplot(x='Actual', y='Predicted', data=df, fit_reg=False, size=7)
 
-    # Create the confusion matrices
-    confusion_matrix = plot_confusion_matrix(clf, X_train, y_train, display_labels=labels, cmap=plt.cm.Blues)
-    confusion_matrix.ax_.set_title('Confusion Matrix, Training')
+    line_coords = np.arange(df.min().min(), df.max().max())
+    plt.plot(line_coords, line_coords, color='darkorange', linestyle='--')
+    plt.title('Actual vs. Predicted')
 
-    fig = confusion_matrix.ax_.get_figure()
-    fig.savefig('out/confusion-matrix-training-{}.png'.format(name), transparent=False)
-
-    confusion_matrix = plot_confusion_matrix(clf, X_test, y_test, display_labels=labels, cmap=plt.cm.Blues)
-    confusion_matrix.ax_.set_title('Confusion Matrix, Test')
-
-    fig = confusion_matrix.ax_.get_figure()
-    fig.savefig('out/confusion-matrix-test-{}.png'.format(name), transparent=False)
-
+    plt.savefig('out/{}-training-data-linearity-test.png'.format(name), transparent=False)
     plt.show()
 
-    # Predict on training and test data
-    y_train_pred = clf.predict(X_train)
-    y_test_pred = clf.predict(X_test)
+    print('R-squared on training data: {}'.format(r2_score(y_train, pred_train)))
 
-    # Classification report
-    print("Classification report: Training data")
-    print(classification_report(y_train, y_train_pred))
-    print()
+    diff_train = pred_train - y_train
+    mae_train = sum(abs(i) for i in diff_train) / len(diff_train)
+    print('MAE on training data: {}'.format(mae_train))
 
-    print("Classification report: Test data")
-    print(classification_report(y_test, y_test_pred))
-    print()
+    # Test data
+    pred_test = rg.predict(X_test)
 
-    # Class prediction error
-    visualizer1 = ClassPredictionError(clf, classes=labels)
-    visualizer1.fit(X_train, y_train)
-    visualizer1.score(X_test, y_test)
-    visualizer1.show()
+    df = pd.DataFrame({'Actual': y_test, 'Predicted': pred_test})
+    sns.lmplot(x='Actual', y='Predicted', data=df, fit_reg=False, size=7)
 
-    fig = visualizer1.ax.get_figure()
-    fig.savefig('out/class-prediction-error-{}.png'.format(name), transparent=False)
+    line_coords = np.arange(df.min().min(), df.max().max())
+    plt.plot(line_coords, line_coords,  # X and y points
+             color='darkorange', linestyle='--')
+    plt.title('Actual vs. Predicted')
 
-    # ROC curve
-    if clf.__class__.__name__ == 'SVC':  # if SVM
-        visualizer2 = ROCAUC(clf, micro=False, macro=False, per_class=False, classes=labels)
-    else:
-        visualizer2 = ROCAUC(clf, classes=labels)
+    plt.savefig('out/{}-test-data-linearity-test.png'.format(name), transparent=False)
+    plt.show()
 
-    visualizer2.fit(X_train, y_train)  # fits the training data to the visualizer
-    visualizer2.score(X_test, y_test)  # evaluate the model on test data
-    visualizer2.show()
+    print('R-squared on test data: {}'.format(r2_score(y_test, pred_test)))
 
-    fig = visualizer2.ax.get_figure()
-    fig.savefig('out/roc-curve-{}.png'.format(name), transparent=False)
-
-    # Feature importance
-    if hasattr(clf, 'feature_importances_'):
-        features = X_train.columns
-        importances = clf.feature_importances_
-        indices = np.argsort(importances)
-
-        fig = plt.figure(figsize=(10, 20))
-        plt.title('Feature Importances')
-        plt.barh(range(len(indices)), importances[indices], color='b', align='center')
-        plt.yticks(range(len(indices)), [features[i] for i in indices])
-        plt.xlabel('Relative Importance')
-
-        fig.savefig('out/feature-importances-{}.png'.format(name), transparent=False)
+    diff_test = pred_test - y_test
+    mae_test = sum(abs(i) for i in diff_test) / len(diff_test)
+    print('MAE on test data: {}'.format(mae_test))
 
 
 # Shows relevant info for the linear regression model
-def show_linear_regression_info(X_train, y_train, X_test, y_test, lin_reg_results, name):
+def show_linear_regression_stats(lin_reg_results, X_train, y_train, X_test, y_test, name):
     # Train
     if name is None:
         data_type = "training-data"
@@ -244,14 +202,11 @@ def get_cv_splits(X_train, initial_train_size, val_size):
     return cv_splits
 
 
-# Helper function to do variance threshold feature selection.
-# This is for models that don't expose "coef_" or "feature_importances_".
-def do_variance_threshold_feature_selection(X_train, y_train, variance_threshold):
-    sel = VarianceThreshold(threshold=variance_threshold)
+# Helper function to do univariate feature selection.
+def do_univariate_feature_selection(X_train, y_train):
+    sel = SelectPercentile(percentile=25, score_func=mutual_info_regression)
     sel.fit(X_train, y_train)
 
-    print('\nVariances:')
-    print(sel.variances_)
     print('\nSupport:')
     print(sel.get_support())
     print('\n# of selected features = {}'.format(sum(sel.get_support())))

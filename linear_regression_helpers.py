@@ -27,12 +27,11 @@ def test_linearity(lin_reg_results, X, y, data_type):
     sns.lmplot(x='Actual', y='Predicted', data=df, fit_reg=False, size=7)
 
     line_coords = np.arange(df.min().min(), df.max().max())
-    plt.plot(line_coords, line_coords,  # X and y points
-             color='darkorange', linestyle='--')
+    plt.plot(line_coords, line_coords, color='darkorange', linestyle='--')
     plt.title('Actual vs. Predicted')
-    plt.show()
 
     plt.savefig('out/linear-regression-{}-linearity-test.png'.format(data_type), transparent=False)
+    plt.show()
 
 
 # Tests for autocorrelation in the error terms
@@ -63,9 +62,9 @@ def test_homoscedasticity(lin_reg_results, X, y, data_type):
     ax.spines['right'].set_visible(False)  # Removing the right spine
     ax.spines['top'].set_visible(False)  # Removing the top spine
     plt.title('Residuals')
-    plt.show()
 
     plt.savefig('out/linear-regression-{}-homoscedasticity-test.png'.format(data_type), transparent=False)
+    plt.show()
 
 
 # Tests for normality of the error terms
@@ -77,9 +76,9 @@ def test_error_normality(lin_reg_results, X, y, data_type):
     plt.subplots(figsize=(12, 6))
     plt.title('Distribution of Residuals')
     sns.distplot(df['Residuals'])
-    plt.show()
 
     plt.savefig('out/linear-regression-{}-error-normality-test.png'.format(data_type), transparent=False)
+    plt.show()
 
     p_value = normal_ad(df['Residuals'])[1]
     print('p-value of the Anderson-Darling test for normality = {} (below 0.05 generally means non-normal)'.format(

@@ -81,28 +81,9 @@ if __name__ == '__main__':
     # MODELS:
 
     # Linear regression
-    print('Linear regression:\n')
-    models.run_linear_regression(X, X_addl, use_X_addl, train_size, test_size)
+    #print('Linear regression:\n')
+    #models.run_linear_regression(X, X_addl, use_X_addl, train_size, test_size)
 
-    # Random forest
-    #print('Random forest:\n')
-    #models.run_random_forest(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_threshold, train_size,
-    #                         test_size)
-
-    # SVM
-    #print('SVM:\n')
-    #models.run_svm(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_threshold, train_size, test_size)
-
-    # Logistic regression
-    #print('Logistic regression:\n')
-    #models.run_logistic_regression(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_threshold,
-    #                               train_size, test_size)
-
-    # Naive Bayes
-    #print('Naive Bayes:\n')
-    #models.run_naive_bayes(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_threshold,
-    #                       train_size, test_size)
-
-    # KNN
-    #print('KNN:\n')
-    #models.run_knn(X, X_addl, use_X_addl, num_days_performance, lower_threshold, upper_threshold, train_size, test_size)
+    # Lasso regression
+    print('Ridge / Lasso regression:\n')
+    models.run_ridge_lasso_regression(X, X_addl, use_X_addl, train_size, test_size)

@@ -85,5 +85,9 @@ if __name__ == '__main__':
     #models.run_linear_regression(X, X_addl, use_X_addl, train_size, test_size)
 
     # Lasso regression
-    print('Ridge / Lasso regression:\n')
-    models.run_ridge_lasso_regression(X, X_addl, use_X_addl, train_size, test_size)
+    #print('Ridge / Lasso regression:\n')
+    #models.run_ridge_lasso_regression(X, X_addl, use_X_addl, train_size, test_size)
+
+    # Random forest regression
+    print('Random forest regression:\n')
+    models.run_random_forest_regression(X, X_addl, use_X_addl, train_size, test_size)

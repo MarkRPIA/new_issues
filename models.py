@@ -7,6 +7,7 @@ import model_helpers
 import numpy as np
 
 import statsmodels.api as sm
+from sklearn.ensemble import RandomForestRegressor
 
 
 ########################################################################################################################
@@ -139,3 +140,66 @@ def run_ridge_lasso_regression(X, X_addl, use_X_addl, train_size, test_size):
     model_helpers.show_model_stats(ridge_lasso_rg, sm.add_constant(X_train_optimal_features, has_constant='add'),
                                    y_train, sm.add_constant(X_test_optimal_features, has_constant='add'), y_test,
                                    'ridge-lasso-optimal-hyperparameters')
+
+
+# Optimizes and runs the random forest models.
+def run_random_forest_regression(X, X_addl, use_X_addl, train_size, test_size):
+    # Prepare the data
+    X_train, y_train, X_test, y_test = model_helpers.prepare_training_and_test_data(X, X_addl, use_X_addl, train_size,
+                                                                                    test_size)
+
+    # Run the model
+    rf_rg = RandomForestRegressor(n_estimators=100, max_features='auto', max_depth=20, bootstrap=True, random_state=7)
+    rf_rg.fit(X_train, y_train)
+
+    model_helpers.show_model_stats(rf_rg, X_train, y_train, X_test, y_test, "random-forest")
+
+    # Do univariate feature selection
+    support = model_helpers.do_univariate_feature_selection(X_train, y_train)
+    print('The optimal features are: ')
+    print(X_train.columns[support])
+
+    # Get the optimal set of features
+    X_train_optimal_features = X_train.loc[:, support]
+    X_test_optimal_features = X_test.loc[:, support]
+
+    print('Shape after only including the optimal features:')
+    print('X train: {}'.format(X_train_optimal_features.shape))
+    print()
+
+    # Run the Random Forest again on the optimal set of features
+    rf_rg = RandomForestRegressor(n_estimators=100, max_features='auto', max_depth=20, bootstrap=True, random_state=7)
+    rf_rg.fit(X_train_optimal_features, y_train)
+
+    model_helpers.show_model_stats(rf_rg, X_train_optimal_features, y_train, X_test_optimal_features, y_test,
+                                   "random-forest-optimal-features")
+
+    # Do hyperparameter grid search
+    rf_hyperparams = {
+        'n_estimators': [10, 25, 50, 100],  # number of trees in the forest
+        'max_features': (None, 'sqrt', 'log2'),
+        'max_depth': [5, 10, 20, 30, 40, 50],  # the maximum depth of a tree
+        'criterion': ('mse', 'mae'),  # function to measure the quality of a split
+        'max_leaf_nodes': [None, 25, 50, 100, 200]
+    }
+
+    rf_rg = RandomForestRegressor(n_estimators=100, max_features='auto', max_depth=20, bootstrap=True, random_state=7)
+
+    initial_train_size = 700
+    val_size = 200
+    cv_splits = model_helpers.get_cv_splits(X_train, initial_train_size, val_size)
+
+    results = model_helpers.do_hyperparameter_grid_search(rf_rg, rf_hyperparams, X_train_optimal_features, y_train,
+                                                          cv_splits, 'neg_mean_absolute_error', 'random-forest')
+
+    print('The results of the random forest hyperparameter grid search are as follows:')
+    print(results)
+
+    # Run the Random Forest again on the optimal set of hyperparameters
+    rf_rg = RandomForestRegressor(criterion='mae', max_depth=40, max_features=None, max_leaf_nodes=200, n_estimators=25,
+                                  bootstrap=True, random_state=7)
+    rf_rg.fit(X_train_optimal_features, y_train)
+
+    model_helpers.show_model_stats(rf_rg, X_train_optimal_features, y_train, X_test_optimal_features, y_test,
+                                   "random-forest-optimal-hyperparameters")
+

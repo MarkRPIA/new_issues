@@ -314,7 +314,7 @@ def run_knn_regression(X, X_addl, use_X_addl, train_size, test_size):
     print(results)
 
     # Run the KNN again on the optimal set of hyperparameters
-    knn_rg = KNeighborsRegressor(n_neighbors=2)
+    knn_rg = KNeighborsRegressor(n_neighbors=5)
     knn_rg.fit(X_train_optimal_features, y_train)
 
     model_helpers.show_model_stats(knn_rg, X_train_optimal_features, y_train, X_test_optimal_features, y_test,

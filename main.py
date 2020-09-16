@@ -81,10 +81,10 @@ if __name__ == '__main__':
     # MODELS:
 
     # Linear regression
-    #print('Linear regression:\n')
-    #models.run_linear_regression(X, X_addl, use_X_addl, train_size, test_size)
+    print('Linear regression:\n')
+    models.run_linear_regression(X, X_addl, use_X_addl, train_size, test_size)
 
-    # Lasso regression
+    # Ridge / Lasso regression
     #print('Ridge / Lasso regression:\n')
     #models.run_ridge_lasso_regression(X, X_addl, use_X_addl, train_size, test_size)
 
@@ -93,5 +93,9 @@ if __name__ == '__main__':
     #models.run_random_forest_regression(X, X_addl, use_X_addl, train_size, test_size)
 
     # SVR
-    print('SVR:\n')
-    models.run_svr(X, X_addl, use_X_addl, train_size, test_size)
+    #print('SVR:\n')
+    #models.run_svr(X, X_addl, use_X_addl, train_size, test_size)
+
+    # KNN
+    #print('KNN:\n')
+    #models.run_knn_regression(X, X_addl, use_X_addl, train_size, test_size)

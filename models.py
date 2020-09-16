@@ -9,6 +9,7 @@ import numpy as np
 import statsmodels.api as sm
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.svm import SVR
+from sklearn.neighbors import KNeighborsRegressor
 
 
 ########################################################################################################################
@@ -261,3 +262,60 @@ def run_svr(X, X_addl, use_X_addl, train_size, test_size):
 
     model_helpers.show_model_stats(svr_rg, X_train_optimal_features, y_train, X_test_optimal_features, y_test,
                                    "svr-optimal-hyperparameters")
+
+
+# Optimizes and runs the KNN models.
+def run_knn_regression(X, X_addl, use_X_addl, train_size, test_size):
+    # Prepare the data
+    X_train, y_train, X_test, y_test = model_helpers.prepare_training_and_test_data(X, X_addl, use_X_addl, train_size,
+                                                                                    test_size)
+
+    # Run the model
+    knn_rg = KNeighborsRegressor(n_neighbors=5)
+    knn_rg.fit(X_train, y_train)
+
+    model_helpers.show_model_stats(knn_rg, X_train, y_train, X_test, y_test, 'knn')
+
+    # Do univariate feature selection
+    support = model_helpers.do_univariate_feature_selection(X_train, y_train)
+    print('The optimal features are: ')
+    print(X_train.columns[support])
+
+    # Get the optimal set of features
+    X_train_optimal_features = X_train.loc[:, support]
+    X_test_optimal_features = X_test.loc[:, support]
+
+    print('Shape after only including the optimal features:')
+    print('X train: {}'.format(X_train_optimal_features.shape))
+    print()
+
+    # Run the KNN again on the optimal set of features
+    knn_rg = KNeighborsRegressor(n_neighbors=5)
+    knn_rg.fit(X_train_optimal_features, y_train)
+
+    model_helpers.show_model_stats(knn_rg, X_train_optimal_features, y_train, X_test_optimal_features, y_test,
+                                   "knn-optimal-features")
+
+    # Do hyperparameter grid search
+    knn_hyperparams = {
+        'n_neighbors': [1, 2, 5, 10, 15, 20, 30, 40, 50]
+    }
+
+    knn_rg = KNeighborsRegressor(n_neighbors=5)
+
+    initial_train_size = 700
+    val_size = 200
+    cv_splits = model_helpers.get_cv_splits(X_train, initial_train_size, val_size)
+
+    results = model_helpers.do_hyperparameter_grid_search(knn_rg, knn_hyperparams, X_train_optimal_features, y_train,
+                                                          cv_splits, 'neg_mean_absolute_error', 'knn')
+
+    print('The results of the KNN hyperparameter grid search are as follows:')
+    print(results)
+
+    # Run the KNN again on the optimal set of hyperparameters
+    knn_rg = KNeighborsRegressor(n_neighbors=2)
+    knn_rg.fit(X_train_optimal_features, y_train)
+
+    model_helpers.show_model_stats(knn_rg, X_train_optimal_features, y_train, X_test_optimal_features, y_test,
+                                   "knn-optimal-hyperparameters")

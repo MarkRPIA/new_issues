@@ -8,6 +8,7 @@ import numpy as np
 
 import statsmodels.api as sm
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.svm import SVR
 
 
 ########################################################################################################################
@@ -203,3 +204,60 @@ def run_random_forest_regression(X, X_addl, use_X_addl, train_size, test_size):
     model_helpers.show_model_stats(rf_rg, X_train_optimal_features, y_train, X_test_optimal_features, y_test,
                                    "random-forest-optimal-hyperparameters")
 
+
+# Optimizes and runs the SVR models.
+def run_svr(X, X_addl, use_X_addl, train_size, test_size):
+    # Prepare the data
+    X_train, y_train, X_test, y_test = model_helpers.prepare_training_and_test_data(X, X_addl, use_X_addl, train_size,
+                                                                                    test_size)
+
+    # Run the model
+    svr_rg = SVR(kernel='poly', C=1.0)  # linear, poly, rbf, sigmoid
+    svr_rg.fit(X_train, y_train)
+
+    model_helpers.show_model_stats(svr_rg, X_train, y_train, X_test, y_test, 'svr')
+
+    # Do univariate feature selection
+    support = model_helpers.do_univariate_feature_selection(X_train, y_train)
+    print('The optimal features are: ')
+    print(X_train.columns[support])
+
+    # Get the optimal set of features
+    X_train_optimal_features = X_train.loc[:, support]
+    X_test_optimal_features = X_test.loc[:, support]
+
+    print('Shape after only including the optimal features:')
+    print('X train: {}'.format(X_train_optimal_features.shape))
+    print()
+
+    # Run the SVR again on the optimal set of features
+    svr_rg = SVR(kernel='linear', C=1.0)
+    svr_rg.fit(X_train_optimal_features, y_train)
+
+    model_helpers.show_model_stats(svr_rg, X_train_optimal_features, y_train, X_test_optimal_features, y_test,
+                                   "svr-optimal-features")
+
+    # Do hyperparameter grid search
+    svr_hyperparams = {
+        'C': [0.10, 1.0, 10.0, 25.0, 50.0, 100.0],
+        'kernel': ['linear', 'poly', 'rbf', 'sigmoid']
+    }
+
+    svr_rg = SVR(kernel='linear', C=1.0)
+
+    initial_train_size = 700
+    val_size = 200
+    cv_splits = model_helpers.get_cv_splits(X_train, initial_train_size, val_size)
+
+    results = model_helpers.do_hyperparameter_grid_search(svr_rg, svr_hyperparams, X_train_optimal_features, y_train,
+                                                          cv_splits, 'neg_mean_absolute_error', 'svr')
+
+    print('The results of the SVR hyperparameter grid search are as follows:')
+    print(results)
+
+    # Run the SVR again on the optimal set of hyperparameters
+    svr_rg = SVR(kernel='linear', C=10.0)
+    svr_rg.fit(X_train_optimal_features, y_train)
+
+    model_helpers.show_model_stats(svr_rg, X_train_optimal_features, y_train, X_test_optimal_features, y_test,
+                                   "svr-optimal-hyperparameters")

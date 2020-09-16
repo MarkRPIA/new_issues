@@ -89,5 +89,9 @@ if __name__ == '__main__':
     #models.run_ridge_lasso_regression(X, X_addl, use_X_addl, train_size, test_size)
 
     # Random forest regression
-    print('Random forest regression:\n')
-    models.run_random_forest_regression(X, X_addl, use_X_addl, train_size, test_size)
+    #print('Random forest regression:\n')
+    #models.run_random_forest_regression(X, X_addl, use_X_addl, train_size, test_size)
+
+    # SVR
+    print('SVR:\n')
+    models.run_svr(X, X_addl, use_X_addl, train_size, test_size)

@@ -18,7 +18,6 @@ verbose = True
 
 num_days_performance = 0  # determines the target variable (we predict the performance from
                           # the issue date until num_days_performance after the issue date)
-field = 'Performance{}'.format(num_days_performance)
 
 use_X_addl = True  # whether or not we want to include the columns in the DataFrame X_addl
 
@@ -76,7 +75,7 @@ if __name__ == '__main__':
     X_addl, df = preprocessing.create_X_addl(X, df, verbose)
 
     # Add the engineered columns
-    X = feature_engineering.add_similarity_cols(X, field, verbose)
+    X = feature_engineering.add_similarity_cols(X, verbose)
 
     # Categorize numerical columns
     X = preprocessing.categorize_numerical_cols(X, verbose)

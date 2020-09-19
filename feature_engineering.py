@@ -17,19 +17,19 @@ def get_rating_bucket(rating_value):
     return math.ceil(rating_value / 3)
 
 
-# Gets the performance of similar new issues. Note that "field" must be "Performance0", ..., "Performance10".
-def get_similar_performance(row, X, field, num_lookback_days, same_sector, same_major_dealers,
-                            same_seniority, same_rating, same_tenor):
+# Gets the performance of similar new issues.
+def get_similar_performance(row, X, num_lookback_days, same_sector, same_major_dealers, same_seniority, same_rating,
+                            same_tenor):
     # Get the subset in the correct date range
     to_date = row['PricingDate']
     from_date = to_date - timedelta(days=num_lookback_days)
     X_lookback = X[(X['PricingDate'] < to_date) & (X['PricingDate'] >= from_date)]
 
-    # Drop rows that have no value for "field"
-    X_lookback = X_lookback.drop(X_lookback[X_lookback[field] == '#VALUE!'].index)
+    # Drop rows that have no value for 'Performance0'
+    X_lookback = X_lookback.drop(X_lookback[X_lookback['Performance0'] == '#VALUE!'].index)
 
-    # Convert the "field" value to float
-    X_lookback[field] = X_lookback[field].astype(float)
+    # Convert 'Performance0' to float
+    X_lookback['Performance0'] = X_lookback['Performance0'].astype(float)
 
     # Get the inds we want to average over
     inds = X_lookback['PricingDate'] < to_date  # all true
@@ -109,39 +109,39 @@ def get_similar_performance(row, X, field, num_lookback_days, same_sector, same_
         tenor_inds = (X['YearsToMaturity'] >= (tenor - 1.5)) & (X['YearsToMaturity'] <= (tenor + 1.5))  # within 3 years
         inds = inds & tenor_inds
 
-    return X_lookback[inds][field].mean()
+    return X_lookback[inds]['Performance0'].mean()
 
 
 # Add the "similarity" columns.
-def add_similarity_cols(X, field, verbose):
-    X['HistSectorPerformance'] = X.apply(get_similar_performance, X=X, field=field, num_lookback_days=7,
-                                         same_sector=True, same_major_dealers=False, same_seniority=False,
-                                         same_rating=False, same_tenor=False, axis=1)
+def add_similarity_cols(X, verbose):
+    X['HistSectorPerformance'] = X.apply(get_similar_performance, X=X, num_lookback_days=7, same_sector=True,
+                                         same_major_dealers=False, same_seniority=False, same_rating=False,
+                                         same_tenor=False, axis=1)
     X['HistSectorPerformance'] = X['HistSectorPerformance'].replace(np.nan, 0).astype(float)
 
-    X['HistDealerPerformance'] = X.apply(get_similar_performance, X=X, field=field, num_lookback_days=7,
-                                         same_sector=False, same_major_dealers=True, same_seniority=False,
-                                         same_rating=False, same_tenor=False, axis=1)
+    X['HistDealerPerformance'] = X.apply(get_similar_performance, X=X, num_lookback_days=7, same_sector=False,
+                                         same_major_dealers=True, same_seniority=False, same_rating=False,
+                                         same_tenor=False, axis=1)
     X['HistDealerPerformance'] = X['HistDealerPerformance'].replace(np.nan, 0).astype(float)
 
-    X['HistSeniorityPerformance'] = X.apply(get_similar_performance, X=X, field=field, num_lookback_days=7,
-                                            same_sector=False, same_major_dealers=False, same_seniority=True,
-                                            same_rating=False, same_tenor=False, axis=1)
+    X['HistSeniorityPerformance'] = X.apply(get_similar_performance, X=X, num_lookback_days=7, same_sector=False,
+                                            same_major_dealers=False, same_seniority=True, same_rating=False,
+                                            same_tenor=False, axis=1)
     X['HistSeniorityPerformance'] = X['HistSeniorityPerformance'].replace(np.nan, 0).astype(float)
 
-    X['HistRatingPerformance'] = X.apply(get_similar_performance, X=X, field=field, num_lookback_days=7,
-                                         same_sector=False, same_major_dealers=False, same_seniority=False,
-                                         same_rating=True, same_tenor=False, axis=1)
+    X['HistRatingPerformance'] = X.apply(get_similar_performance, X=X, num_lookback_days=7, same_sector=False,
+                                         same_major_dealers=False, same_seniority=False, same_rating=True,
+                                         same_tenor=False, axis=1)
     X['HistRatingPerformance'] = X['HistRatingPerformance'].replace(np.nan, 0).astype(float)
 
-    X['HistTenorPerformance'] = X.apply(get_similar_performance, X=X, field=field, num_lookback_days=7,
-                                        same_sector=False, same_major_dealers=False, same_seniority=False,
-                                        same_rating=False, same_tenor=True, axis=1)
+    X['HistTenorPerformance'] = X.apply(get_similar_performance, X=X, num_lookback_days=7, same_sector=False,
+                                        same_major_dealers=False, same_seniority=False, same_rating=False,
+                                        same_tenor=True, axis=1)
     X['HistTenorPerformance'] = X['HistTenorPerformance'].replace(np.nan, 0).astype(float)
 
-    X['HistAllPerformance'] = X.apply(get_similar_performance, X=X, field=field, num_lookback_days=30,
-                                      same_sector=True, same_major_dealers=True, same_seniority=True,
-                                      same_rating=True, same_tenor=True, axis=1)
+    X['HistAllPerformance'] = X.apply(get_similar_performance, X=X, num_lookback_days=30, same_sector=True,
+                                      same_major_dealers=True, same_seniority=True, same_rating=True, same_tenor=True,
+                                      axis=1)
     X['HistAllPerformance'] = X['HistAllPerformance'].replace(np.nan, 0).astype(float)
 
     X = X.drop(['PricingDate'], axis=1)

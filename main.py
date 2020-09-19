@@ -16,9 +16,6 @@ import models
 
 verbose = True
 
-num_days_performance = 0  # used to get the similarity columns
-field = 'Performance{}'.format(num_days_performance)
-
 use_X_addl = True  # whether or not we want to include the columns in the DataFrame X_addl
 
 train_size = 0.8
@@ -72,7 +69,7 @@ if __name__ == '__main__':
     X_addl, df = preprocessing.create_X_addl(X, df, verbose)
 
     # Add the engineered columns
-    X = feature_engineering.add_similarity_cols(X, field, verbose)
+    X = feature_engineering.add_similarity_cols(X, verbose)
 
     # Profile the data (again)
     # if verbose:
